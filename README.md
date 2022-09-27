@@ -53,8 +53,8 @@ They mostly use cuBLAS as linear algebra library optimized for NVIDIA GPUs.
 
 The following libraries/frameworks are used in this repository.
 
-* [![cuBLAS][https://developer.nvidia.com/cublas]
-* [![nvbench][https://github.com/NVIDIA/nvbench]
+* [cuBLAS][https://developer.nvidia.com/cublas]
+* [nvbench][https://github.com/NVIDIA/nvbench]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -126,6 +126,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Contact
 
 Bagus Hanindhito - hanindhito [at] bagus [dot] my [dot] id
+
 Project Link: [https://github.com/hibagus/CUDA_Bench](https://github.com/hibagus/CUDA_Bench)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
