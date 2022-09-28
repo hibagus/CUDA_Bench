@@ -1,0 +1,3 @@
+[submodule "3rdParty/nvbench"]
+	path = 3rdParty/nvbench
+	url = https://github.com/NVIDIA/nvbench
