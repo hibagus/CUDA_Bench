@@ -21,9 +21,16 @@ else()
     message(FATAL_ERROR "Unrecognized build mode")
 endif()
 
+include(cmake/CudaSettings.cmake)
+include(cmake/ExternalLibs.cmake)
+
+# add project include dirs for everything
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# add project library
+set(PROJECT_GEMM_LIB "gemmbenchlib" )
 
 # Add Source Code and Apps
-#add_subdirectory(src)
-add_subdirectory(libs)
+add_subdirectory(src)
 add_subdirectory(apps)
 
