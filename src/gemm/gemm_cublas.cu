@@ -2,7 +2,9 @@
 // (C) 2022 Bagus Hanindhito
 
 #include <CUDA_Bench/gemm/gemm_cublas.cuh>
+#include <CUDA_Bench/util/gpuinfo.cuh>
 #include <CUDA_Bench/util/gpucheck.cuh>
+#include <CUDA_Bench/gemm/gemm_util.cuh>
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cuda_fp16.h>
@@ -11,8 +13,14 @@
 
 int gemm_cublas(int dim_M, int dim_N, int dim_K)
 {
-	cublasHandle_t handle;	// CUBLAS context
+    // Detect Available CUDA Devices
+    int nDevices;
+    gpuErrchk(cudaGetDeviceCount(&nDevices));
+    print_cuda_device_info(nDevices);
+    if(nDevices>0) {std::cout << "[WARN] This program does not currently support Multi-GPU run.\n";}
 
+    // Initialize cuBLAS
+	cublasHandle_t handle;	// CUBLAS context
     gpuErrchk(cublasCreate(&handle));
 
     // Matrices on device

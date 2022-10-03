@@ -22,6 +22,8 @@ else()
 endif()
 
 include(cmake/CudaSettings.cmake)
+
+# interface library for external library
 include(cmake/ExternalLibs.cmake)
 
 # add project include dirs for everything

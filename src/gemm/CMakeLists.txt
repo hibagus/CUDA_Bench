@@ -1,1 +1,1 @@
-add_sources(PROJECT_GEMM_SRC gemm_cublas.cu)
+add_sources(PROJECT_GEMM_SRC gemm_cublas.cu gemm_util.cu)
