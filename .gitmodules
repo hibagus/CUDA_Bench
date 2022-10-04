@@ -4,3 +4,6 @@
 [submodule "3rdParty/argparse"]
 	path = 3rdParty/argparse
 	url = https://github.com/p-ranav/argparse.git
+[submodule "3rdParty/cutlass"]
+	path = 3rdParty/cutlass
+	url = https://github.com/NVIDIA/cutlass.git

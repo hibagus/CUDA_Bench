@@ -14,8 +14,6 @@ target_link_libraries(external_nvbench
 target_include_directories(external_nvbench
     INTERFACE ${CMAKE_SOURCE_DIR}/libs/nvbench/include)
 
-
-
 # argparse
 add_library(external_argparse INTERFACE)
 ExternalProject_Add(argparse
@@ -26,3 +24,21 @@ ExternalProject_Add(argparse
 )
 target_include_directories(external_argparse
     INTERFACE ${CMAKE_SOURCE_DIR}/libs/argparse/include)
+
+# cutlass
+add_library(external_cutlass INTERFACE)
+ExternalProject_Add(cutlass
+    PREFIX ${CMAKE_SOURCE_DIR}/3rdParty/cutlass/build
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/3rdParty/cutlass/
+    CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/libs/cutlass
+    -DCUTLASS_NVCC_ARCHS=${GPU_ARCHITECTURE_SUPPORT}
+    -DCUTLASS_ENABLE_TOOLS_INIT=OFF
+    -DCUTLASS_ENABLE_LIBRARY_INIT=OFF
+    -DCUTLASS_ENABLE_EXAMPLES_INIT=OFF
+    -DCUTLASS_ENABLE_TESTS_INIT=OFF
+    -DCUTLASS_ENABLE_TESTS=OFF
+
+)
+target_include_directories(external_cutlass
+    INTERFACE ${CMAKE_SOURCE_DIR}/libs/cutlass/include)
