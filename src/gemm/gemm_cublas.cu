@@ -13,7 +13,7 @@
 #include <iostream>
 
 
-int gemm_cublas(int dim_M, int dim_N, int dim_K, Precision precision, bool print_result)
+int gemm_cublas(int dim_M, int dim_N, int dim_K, Precision precision, int num_iter, bool print_result, bool tensor_cores)
 {
     // Detect Available CUDA Devices
     int nDevices;
