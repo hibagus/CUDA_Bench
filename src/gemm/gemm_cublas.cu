@@ -2,16 +2,18 @@
 // (C) 2022 Bagus Hanindhito
 
 #include <CUDA_Bench/gemm/gemm_cublas.cuh>
+#include <CUDA_Bench/gemm/gemm_util.cuh>
 #include <CUDA_Bench/util/gpuinfo.cuh>
 #include <CUDA_Bench/util/gpucheck.cuh>
-#include <CUDA_Bench/gemm/gemm_util.cuh>
+#include <CUDA_Bench/util/precision_select.cuh>
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cuda_fp16.h>
 #include <cuda_profiler_api.h>
 #include <iostream>
 
-int gemm_cublas(int dim_M, int dim_N, int dim_K)
+
+int gemm_cublas(int dim_M, int dim_N, int dim_K, Precision precision)
 {
     // Detect Available CUDA Devices
     int nDevices;

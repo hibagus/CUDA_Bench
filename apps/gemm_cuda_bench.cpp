@@ -1,10 +1,6 @@
 #include <argparse/argparse.hpp>
 #include <CUDA_Bench/gemm/gemm_cublas.cuh>
-//#include <CUDA_Bench/util/gpuinfo.cuh>
-//#include <CUDA_Bench/util/gpucheck.cuh>
-
-//int argparse(char *argv);
-//void help();
+#include <CUDA_Bench/util/precision_select.cuh>
 
 int main(int argc, char *argv[])
 {
@@ -24,7 +20,7 @@ int main(int argc, char *argv[])
             .help("Positive integer that describes K dimension of the matrices A(MxK) and B(KxN)")
             .scan<'i', int>();
         program.add_argument("-P", "--precision")
-            .help("Select matrix multiplication precision")
+            .help("Select matrix multiplication precision: fp64, fp32, fp16, int8, or int4")
             .default_value(std::string("fp16"))
             .metavar("PREC");
 
@@ -43,7 +39,7 @@ int main(int argc, char *argv[])
     int dim_M = program.get<int>("dim_M");
     int dim_N = program.get<int>("dim_N");
     int dim_K = program.get<int>("dim_K");
-    std::string precision = program.get<std::string>("--precision");
+    std::string str_precision = program.get<std::string>("--precision");
 
     // Argument Validation
     if(dim_M<=0 || dim_N<=0 || dim_K<=0)
@@ -53,7 +49,23 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
     
+    Precision precision;
+    if (str_precision=="fp64") {precision=PRECISION_FP64;}
+    else if (str_precision=="fp32") {precision=PRECISION_FP32;}
+    //else if (str_precision=="tf32") {precision=PRECISION_TF32;}
+    else if (str_precision=="fp16") {precision=PRECISION_FP16;}
+    //else if (str_precision=="bf16") {precision=PRECISION_BF16;}
+    else if (str_precision=="int8") {precision=PRECISION_INT8;}
+    else if (str_precision=="int4") {precision=PRECISION_INT4;}
+    //else if (str_precision=="int1") {precision=PRECISION_INT1;}
+    else
+    {
+        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix multiplication precision\n\n\n";
+        std::cerr << program;
+        std::exit(1);
+    }
+    
     // Call cuBlas
-    gemm_cublas(dim_M, dim_N, dim_K);
+    gemm_cublas(dim_M, dim_N, dim_K, precision);
     return 0;
 }
