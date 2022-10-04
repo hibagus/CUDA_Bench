@@ -23,7 +23,11 @@ int main(int argc, char *argv[])
             .help("Select matrix multiplication precision: fp64, fp32, fp16, int8, or int4")
             .default_value(std::string("fp16"))
             .metavar("PREC");
-
+        program.add_argument("-R", "--result")
+            .help("Print result at the end of program")
+            .default_value(false)
+            .implicit_value(true)
+            .metavar("RESULT");
     try 
     {
         program.parse_args(argc, argv);
@@ -40,6 +44,7 @@ int main(int argc, char *argv[])
     int dim_N = program.get<int>("dim_N");
     int dim_K = program.get<int>("dim_K");
     std::string str_precision = program.get<std::string>("--precision");
+    bool print_result = program.get<bool>("--result");
 
     // Argument Validation
     if(dim_M<=0 || dim_N<=0 || dim_K<=0)
@@ -66,6 +71,6 @@ int main(int argc, char *argv[])
     }
     
     // Call cuBlas
-    gemm_cublas(dim_M, dim_N, dim_K, precision);
+    gemm_cublas(dim_M, dim_N, dim_K, precision, print_result);
     return 0;
 }
