@@ -32,10 +32,14 @@ int main(int argc, char *argv[])
             .default_value(false)
             .implicit_value(true)
             .metavar("CUDACORES");
-        program.add_argument("-P", "--precision")
+        program.add_argument("-M", "--mulprecision")
             .help("Select matrix multiplication precision: fp64, fp32, fp16, int8, or int4")
             .default_value(std::string("fp16"))
-            .metavar("PREC");
+            .metavar("MULPREC");
+        program.add_argument("-M", "--accprecision")
+            .help("Select matrix accumulation precision: fp64, fp32, fp16, int8, or int4")
+            .default_value(std::string("fp16"))
+            .metavar("ACCPREC");
         program.add_argument("-I", "--iterations")
             .help("Number of iterations, useful for performance profiling")
             .scan<'i', int>()
@@ -57,9 +61,10 @@ int main(int argc, char *argv[])
     int dim_N = program.get<int>("dim_N");
     int dim_K = program.get<int>("dim_K");
     int num_iter = program.get<int>("--iterations");
-    std::string str_precision = program.get<std::string>("--precision");
+    std::string str_mulprecision = program.get<std::string>("--mulprecision");
+    std::string str_accprecision = program.get<std::string>("--accprecision");
     bool print_result = program.get<bool>("--result");
-    bool tensor_cores = ~(program.get<bool>("--cudacoresonly"));
+    bool tensor_cores = !(program.get<bool>("--cudacoresonly"));
 
     // Argument Validation
     if(dim_M<=0 || dim_N<=0 || dim_K<=0)
@@ -76,23 +81,39 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
 
-    Precision precision;
-    if (str_precision=="fp64") {precision=PRECISION_FP64;}
-    else if (str_precision=="fp32") {precision=PRECISION_FP32;}
-    //else if (str_precision=="tf32") {precision=PRECISION_TF32;}
-    else if (str_precision=="fp16") {precision=PRECISION_FP16;}
-    //else if (str_precision=="bf16") {precision=PRECISION_BF16;}
-    else if (str_precision=="int8") {precision=PRECISION_INT8;}
-    else if (str_precision=="int4") {precision=PRECISION_INT4;}
-    //else if (str_precision=="int1") {precision=PRECISION_INT1;}
+    Precision mulprecision;
+    if (str_mulprecision=="fp64") {mulprecision=PRECISION_FP64;}
+    else if (str_mulprecision=="fp32") {mulprecision=PRECISION_FP32;}
+    //else if (str_mulprecision=="tf32") {mulprecision=PRECISION_TF32;}
+    else if (str_mulprecision=="fp16") {mulprecision=PRECISION_FP16;}
+    //else if (str_mulprecision=="bf16") {mulprecision=PRECISION_BF16;}
+    else if (str_mulprecision=="int8") {mulprecision=PRECISION_INT8;}
+    else if (str_mulprecision=="int4") {mulprecision=PRECISION_INT4;}
+    //else if (str_mulprecision=="int1") {mulprecision=PRECISION_INT1;}
     else
     {
         std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix multiplication precision\n\n\n";
         std::cerr << program;
         std::exit(1);
     }
+
+    Precision accprecision;
+    if (str_accprecision=="fp64") {accprecision=PRECISION_FP64;}
+    else if (str_accprecision=="fp32") {accprecision=PRECISION_FP32;}
+    //else if (str_accprecision=="tf32") {accprecision=PRECISION_TF32;}
+    else if (str_accprecision=="fp16") {accprecision=PRECISION_FP16;}
+    //else if (str_accprecision=="bf16") {accprecision=PRECISION_BF16;}
+    else if (str_accprecision=="int8") {accprecision=PRECISION_INT8;}
+    else if (str_accprecision=="int4") {accprecision=PRECISION_INT4;}
+    //else if (str_accprecision=="int1") {accprecision=PRECISION_INT1;}
+    else
+    {
+        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix accumulation precision\n\n\n";
+        std::cerr << program;
+        std::exit(1);
+    }
     
     // Call cuBlas
-    gemm_cublas(dim_M, dim_N, dim_K, precision, num_iter, print_result, tensor_cores);
+    gemm_cublas(dim_M, dim_N, dim_K, mulprecision, accprecision, num_iter, print_result, tensor_cores);
     return 0;
 }
