@@ -1,5 +1,5 @@
 set(CMAKE_CUDA_RUNTIME_LIBRARY SHARED)
-set(GPU_ARCHITECTURE_SUPPORT "70")
+set(GPU_ARCHITECTURE_SUPPORT "70;80;86")
 
 # CUDA Architecture Support:
 # * Fermi (Note: Dropped from CUDA 10 onwards)
