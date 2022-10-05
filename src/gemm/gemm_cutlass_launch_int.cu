@@ -8,6 +8,116 @@
 #include <cutlass/util/host_tensor.h>
 
 
+int gemm_cutlass_launch_turing_int32_int8_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+{
+    // Launch cutlass for NVIDIA Turing, scale precision int32, multiplication precision int8, accumulation precision int32
+    cutlass::gemm::GemmCoord problem_dim(dim_M, dim_N, dim_K);
+    
+    // Declare the operation precision
+    using mulPrecision   = int8_t;   // multiplication precision
+    using accPrecision   = int32_t;  // accumulation precision
+    using scalePrecision = int32_t;  // scaling precision
+
+    // Define Layout
+    using layout_matA = cutlass::layout::RowMajor;    layout_matA _layout_matA;
+    using layout_matB = cutlass::layout::ColumnMajor; layout_matB _layout_matB;
+    using layout_matC = cutlass::layout::ColumnMajor; layout_matC _layout_matC;
+
+    // Device-Related Kernel Settings
+    using MMAOp               = cutlass::arch::OpClassTensorOp;         // use Tensor Cores
+    using SmArch              = cutlass::arch::Sm75;                    // Turing SM
+    using ShapeMMAThreadBlock = cutlass::gemm::GemmShape<128, 256, 64>; // Thread Block Shape 
+    using ShapeMMAWarp        = cutlass::gemm::GemmShape<64, 64, 64>;   // Warp Shape
+    using ShapeMMAOp          = cutlass::gemm::GemmShape<8, 8, 16>;    // Instruction Shape
+
+    using SwizzleThreadBlock  = cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>; // default
+    using EpilogueOutputOp    = cutlass::epilogue::thread::LinearCombinationClamp<accPrecision, 128/cutlass::sizeof_bits<accPrecision>::value, accPrecision, accPrecision>;
+
+    // Instatiate CUTLASS GEMM 
+    using Gemm = cutlass::gemm::device::Gemm<mulPrecision,              // matrix A precision
+                                             layout_matA,               // matrix A layout
+                                             mulPrecision,              // matrix B precision
+                                             layout_matB,               // matrix B layout
+                                             accPrecision,              // matrix C precision
+                                             layout_matC,               // matrix C layout
+                                             accPrecision,              // matrix C precision (output)
+                                             MMAOp,                     
+                                             SmArch,
+                                             ShapeMMAThreadBlock,
+                                             ShapeMMAWarp,
+                                             ShapeMMAOp,
+                                             EpilogueOutputOp,
+                                             SwizzleThreadBlock,
+                                             2>;
+
+    // Allocate Matrices on Device Memory
+    mulPrecision* dev_matA;
+    mulPrecision* dev_matB;
+    accPrecision* dev_matC;
+    scalePrecision alpha = scalePrecision(1);
+    scalePrecision beta  = scalePrecision(0);
+
+    gpuErrchk(cudaMalloc((void**)&dev_matA, dim_M * dim_K * sizeof(mulPrecision)));
+    gpuErrchk(cudaMalloc((void**)&dev_matB, dim_K * dim_N * sizeof(mulPrecision)));
+    gpuErrchk(cudaMalloc((void**)&dev_matC, dim_M * dim_N * sizeof(accPrecision)));
+
+    // Fill Matrices with Dummy Data
+    initialize_colposneg_matrix<mulPrecision><<<((dim_M*dim_K)+512-1)/512,512>>>(dev_matA, dim_M, dim_K, 1);
+    initialize_rownegpos_matrix<mulPrecision><<<((dim_K*dim_N)+512-1)/512,512>>>(dev_matB, dim_K, dim_N, 1);
+    initialize_matrix<accPrecision><<<((dim_M*dim_N)+512-1)/512,512>>>(dev_matC, dim_M, dim_N, 0);
+    gpuErrchk(cudaDeviceSynchronize());
+    
+    // Prepare launch arguments and extra device memory for matrix multiplication
+    typename Gemm::Arguments arguments{problem_dim,  // <- problem size of matrix multiplication
+                                       {dev_matA, dim_K},  // <- reference to matrix A on device //MxK
+                                       {dev_matB, dim_K},  // <- reference to matrix B on device //KxN
+                                       {dev_matC, dim_M},  // <- reference to matrix C on device //MxN
+                                       {dev_matC, dim_M},  // <- reference to matrix D on device
+                                       {alpha, beta}, // <- tuple of alpha and beta
+                                       1};            // <- k-dimension split factor
+
+    // Using the arguments, query for extra workspace required for matrix multiplication computation
+    size_t workspace_size = Gemm::get_workspace_size(arguments);
+    cutlass::device_memory::allocation<uint8_t> workspace(workspace_size);
+
+    // Instantiate CUTLASS kernel depending on templates
+    Gemm gemm_op;
+
+    // Check the problem size is supported or not 
+    gpuErrchk(gemm_op.can_implement(arguments));
+
+    // Initialize CUTLASS kernel with arguments and workspace pointer
+    gpuErrchk(gemm_op.initialize(arguments, workspace.get()));
+
+    // Launch initialized CUTLASS kernel
+    cudaProfilerStart();
+    for(int iter=0;iter<num_iter;iter++)
+    {
+        gpuErrchk(gemm_op());
+    }
+    cudaProfilerStop();
+    gpuErrchk(cudaDeviceSynchronize());
+
+    if(print_result)
+    {
+        std::cout << "Matrix A: " << std::endl;
+        view_matrix_int<mulPrecision><<<1,1>>>(dev_matA, dim_M, dim_K);
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Matrix B: " << std::endl;
+        view_matrix_int<mulPrecision><<<1,1>>>(dev_matB, dim_K, dim_N);
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Matrix C: " << std::endl;
+        view_matrix_int<accPrecision><<<1,1>>>(dev_matC, dim_M, dim_N);
+        gpuErrchk(cudaDeviceSynchronize());
+    }
+
+    gpuErrchk(cudaFree(dev_matA));
+    gpuErrchk(cudaFree(dev_matB));
+    gpuErrchk(cudaFree(dev_matC));
+
+    return 0;
+}
+
 int gemm_cutlass_launch_ampere_int32_int8_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
 {
     // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int8, accumulation precision int32
@@ -118,9 +228,119 @@ int gemm_cutlass_launch_ampere_int32_int8_int32_tc(int dim_M, int dim_N, int dim
     return 0;
 }
 
+int gemm_cutlass_launch_turing_int32_int4_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+{
+    // Launch cutlass for NVIDIA Turing, scale precision int32, multiplication precision int4, accumulation precision int32
+    cutlass::gemm::GemmCoord problem_dim(dim_M, dim_N, dim_K);
+    
+    // Declare the operation precision
+    using mulPrecision   = cutlass::int4b_t;   // multiplication precision
+    using accPrecision   = int32_t;            // accumulation precision
+    using scalePrecision = int32_t;            // scaling precision
+
+    // Define Layout
+    using layout_matA = cutlass::layout::RowMajor;    layout_matA _layout_matA;
+    using layout_matB = cutlass::layout::ColumnMajor; layout_matB _layout_matB;
+    using layout_matC = cutlass::layout::ColumnMajor; layout_matC _layout_matC;
+
+    // Device-Related Kernel Settings
+    using MMAOp               = cutlass::arch::OpClassTensorOp;          // use Tensor Cores
+    using SmArch              = cutlass::arch::Sm75;                     // Turing SM
+    using ShapeMMAThreadBlock = cutlass::gemm::GemmShape<128, 256, 128>; // Thread Block Shape 
+    using ShapeMMAWarp        = cutlass::gemm::GemmShape<64, 64, 128>;   // Warp Shape
+    using ShapeMMAOp          = cutlass::gemm::GemmShape<8, 8, 32>;      // Instruction Shape
+
+    using SwizzleThreadBlock  = cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>; // default
+    using EpilogueOutputOp    = cutlass::epilogue::thread::LinearCombinationClamp<accPrecision, 128/cutlass::sizeof_bits<accPrecision>::value, accPrecision, accPrecision>;
+
+    // Instatiate CUTLASS GEMM 
+    using Gemm = cutlass::gemm::device::Gemm<mulPrecision,              // matrix A precision
+                                             layout_matA,               // matrix A layout
+                                             mulPrecision,              // matrix B precision
+                                             layout_matB,               // matrix B layout
+                                             accPrecision,              // matrix C precision
+                                             layout_matC,               // matrix C layout
+                                             accPrecision,              // matrix C precision (output)
+                                             MMAOp,                     
+                                             SmArch,
+                                             ShapeMMAThreadBlock,
+                                             ShapeMMAWarp,
+                                             ShapeMMAOp,
+                                             EpilogueOutputOp,
+                                             SwizzleThreadBlock,
+                                             2>;
+
+    // Allocate Matrices on Device Memory
+    mulPrecision* dev_matA;
+    mulPrecision* dev_matB;
+    accPrecision* dev_matC;
+    scalePrecision alpha = scalePrecision(1);
+    scalePrecision beta  = scalePrecision(0);
+
+    gpuErrchk(cudaMalloc((void**)&dev_matA, dim_M * dim_K * sizeof(mulPrecision)));
+    gpuErrchk(cudaMalloc((void**)&dev_matB, dim_K * dim_N * sizeof(mulPrecision)));
+    gpuErrchk(cudaMalloc((void**)&dev_matC, dim_M * dim_N * sizeof(accPrecision)));
+
+    // Fill Matrices with Dummy Data
+    initialize_colposneg_matrix<mulPrecision><<<((dim_M*dim_K)+512-1)/512,512>>>(dev_matA, dim_M, dim_K, 1);
+    initialize_rownegpos_matrix<mulPrecision><<<((dim_K*dim_N)+512-1)/512,512>>>(dev_matB, dim_K, dim_N, 1);
+    initialize_matrix<accPrecision><<<((dim_M*dim_N)+512-1)/512,512>>>(dev_matC, dim_M, dim_N, 0);
+    gpuErrchk(cudaDeviceSynchronize());
+    
+    // Prepare launch arguments and extra device memory for matrix multiplication
+    typename Gemm::Arguments arguments{problem_dim,  // <- problem size of matrix multiplication
+                                       {dev_matA, dim_K},  // <- reference to matrix A on device //MxK
+                                       {dev_matB, dim_K},  // <- reference to matrix B on device //KxN
+                                       {dev_matC, dim_M},  // <- reference to matrix C on device //MxN
+                                       {dev_matC, dim_M},  // <- reference to matrix D on device
+                                       {alpha, beta}, // <- tuple of alpha and beta
+                                       1};            // <- k-dimension split factor
+
+    // Using the arguments, query for extra workspace required for matrix multiplication computation
+    size_t workspace_size = Gemm::get_workspace_size(arguments);
+    cutlass::device_memory::allocation<uint8_t> workspace(workspace_size);
+
+    // Instantiate CUTLASS kernel depending on templates
+    Gemm gemm_op;
+
+    // Check the problem size is supported or not 
+    gpuErrchk(gemm_op.can_implement(arguments));
+
+    // Initialize CUTLASS kernel with arguments and workspace pointer
+    gpuErrchk(gemm_op.initialize(arguments, workspace.get()));
+
+    // Launch initialized CUTLASS kernel
+    cudaProfilerStart();
+    for(int iter=0;iter<num_iter;iter++)
+    {
+        gpuErrchk(gemm_op());
+    }
+    cudaProfilerStop();
+    gpuErrchk(cudaDeviceSynchronize());
+
+    if(print_result)
+    {
+        std::cout << "Matrix A: " << std::endl;
+        view_matrix_int<mulPrecision><<<1,1>>>(dev_matA, dim_M, dim_K);
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Matrix B: " << std::endl;
+        view_matrix_int<mulPrecision><<<1,1>>>(dev_matB, dim_K, dim_N);
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Matrix C: " << std::endl;
+        view_matrix_int<accPrecision><<<1,1>>>(dev_matC, dim_M, dim_N);
+        gpuErrchk(cudaDeviceSynchronize());
+    }
+
+    gpuErrchk(cudaFree(dev_matA));
+    gpuErrchk(cudaFree(dev_matB));
+    gpuErrchk(cudaFree(dev_matC));
+
+    return 0;
+}
+
 int gemm_cutlass_launch_ampere_int32_int4_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
 {
-    // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int8, accumulation precision int32
+    // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int4, accumulation precision int32
     cutlass::gemm::GemmCoord problem_dim(dim_M, dim_N, dim_K);
     
     // Declare the operation precision
@@ -227,8 +447,6 @@ int gemm_cutlass_launch_ampere_int32_int4_int32_tc(int dim_M, int dim_N, int dim
 
     return 0;
 }
-
-
 
 
 
