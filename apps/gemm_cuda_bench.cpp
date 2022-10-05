@@ -1,5 +1,6 @@
 #include <argparse/argparse.hpp>
 #include <CUDA_Bench/gemm/gemm_cublas.cuh>
+#include <CUDA_Bench/gemm/gemm_cutlass.cuh>
 #include <CUDA_Bench/util/precision_select.cuh>
 
 int main(int argc, char *argv[])
@@ -21,7 +22,6 @@ int main(int argc, char *argv[])
         program.add_argument("dim_K")
             .help("Positive integer that describes K dimension of the matrices A(MxK) and B(KxN)")
             .scan<'i', int>();
-
         program.add_argument("-R", "--result")
             .help("Show result at the end of program")
             .default_value(false)
@@ -32,6 +32,11 @@ int main(int argc, char *argv[])
             .default_value(false)
             .implicit_value(true)
             .metavar("CUDACORES");
+        program.add_argument("-B", "--usecublas")
+            .help("Use NVIDIA CUBLAS library instead of NVIDIA CUTLASS for GEMM")
+            .default_value(false)
+            .implicit_value(true)
+            .metavar("CUBLAS");
         program.add_argument("-P", "--profile")
             .help("Enable built-in kernel profiling with NVBench")
             .default_value(false)
@@ -74,6 +79,7 @@ int main(int argc, char *argv[])
     bool print_result = program.get<bool>("--result");
     bool tensor_cores = !(program.get<bool>("--cudacoresonly"));
     bool profiling    = program.get<bool>("--profile");
+    bool use_cublas   = program.get<bool>("--usecublas");
 
     // Argument Validation
     if(dim_M<=0 || dim_N<=0 || dim_K<=0)
@@ -122,7 +128,23 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
 
-    // Call cuBlas
-    gemm_cublas(dim_M, dim_N, dim_K, mulprecision, accprecision, num_iter, print_result, tensor_cores, profiling);
+    if(use_cublas)
+    {
+        if(mulprecision==PRECISION_INT4 || accprecision==PRECISION_INT4)
+        {
+            std::cerr <<"[ERR!] CUBLAS GEMM implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
+            std::exit(1);
+        }
+        else
+        {
+            std::cerr <<"[INFO] Program is using NVIDIA CUBLAS library for GEMM\n";
+            gemm_cublas(dim_M, dim_N, dim_K, mulprecision, accprecision, num_iter, print_result, tensor_cores, profiling);
+        }
+    }
+    else
+    {
+        std::cerr <<"[INFO] Program is using NVIDIA CUTLASS library for GEMM\n";
+        gemm_cutlass(dim_M, dim_N, dim_K, mulprecision, accprecision, num_iter, print_result, tensor_cores, profiling);
+    }    
     return 0;
 }
