@@ -3,6 +3,7 @@
 #include <cuda.h>
 #include <stdio.h>
 #include <cublas_v2.h>
+#include <cutlass/cutlass.h>
 
 static const char *cuBLASGetErrorString(cublasStatus_t error)
 {
@@ -64,5 +65,16 @@ inline void
     fprintf(
       stderr, "[ERR!]: %s %s %d\n", cuBLASGetErrorString(code), file, line);
     if (abort) exit(code);
+  }
+}
+
+inline void
+  gpuAssert(cutlass::Status code, const char* file, int line, bool abort = true)
+{
+  if (code != cutlass::Status::kSuccess)
+  {
+    fprintf(
+      stderr, "[ERR!]: %s %s %d\n", cutlassGetStatusString(code), file, line);
+    if (abort) exit(1);
   }
 }
