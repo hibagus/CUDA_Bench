@@ -2,6 +2,7 @@
 
 #include <cuda.h>
 #include <cuda_fp16.h>
+#include <cutlass/cutlass.h>
 #include <iostream>
 
 template<typename T>
