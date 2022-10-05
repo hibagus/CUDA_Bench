@@ -41,6 +41,7 @@ int gemm_cutlass(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precis
         {
             switch(gpuarch)
             {
+                case GPUARCH_VOLTA : {std::cout << "[ERR!] Volta Tensor Cores do not support int8. Please use CUDA Cores instead\n"; exit(1); break;}
                 case GPUARCH_TURING: {gemm_cutlass_launch_turing_int32_int8_int32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
                 case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_int32_int8_int32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
                 default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
@@ -51,9 +52,9 @@ int gemm_cutlass(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precis
         {
             switch(gpuarch)
             {
-                case GPUARCH_VOLTA : {break;}
-                case GPUARCH_TURING: {break;}
-                case GPUARCH_AMPERE: {break;}
+                case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_int32_int8_int32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_TURING: {gemm_cutlass_launch_turing_int32_int8_int32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_int32_int8_int32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
                 default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
             }
         }
@@ -65,6 +66,7 @@ int gemm_cutlass(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precis
         {
             switch(gpuarch)
             {
+                case GPUARCH_VOLTA : {std::cout << "[ERR!] Volta Tensor Cores do not support int4\n"; exit(1); break;}
                 case GPUARCH_TURING: {gemm_cutlass_launch_turing_int32_int4_int32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
                 case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_int32_int4_int32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
                 default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
@@ -73,16 +75,9 @@ int gemm_cutlass(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precis
         }
         else
         {
-            switch(gpuarch)
-            {
-                case GPUARCH_VOLTA : {break;}
-                case GPUARCH_TURING: {break;}
-                case GPUARCH_AMPERE: {break;}
-                default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
-            }
+            std::cout << "[ERR!] Operations involving int4 requires the use of Tensor Cores\n"; 
+            exit(1);
         }
     }
-    
-
     return 0;
 }
