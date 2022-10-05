@@ -22,9 +22,9 @@ add_subdirectory(gemm)
 # Set Library
 ## PROJECT_GEMM_LIB
 add_library(${PROJECT_GEMM_LIB} STATIC ${PROJECT_GEMM_SRC})
-add_dependencies(${PROJECT_GEMM_LIB} nvbench)
+add_dependencies(${PROJECT_GEMM_LIB} nvbench cutlass)
 set_target_properties(${PROJECT_GEMM_LIB}
                         PROPERTIES CUDA_SEPARABLE_COMPILATION ON
                         CUDA_ARCHITECTURES ${GPU_ARCHITECTURE_SUPPORT})
 target_link_libraries(${PROJECT_GEMM_LIB}
-                      PRIVATE -lcublas)
+                      PRIVATE -lcublas external_cutlass)

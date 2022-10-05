@@ -59,7 +59,6 @@ __global__ void initialize_colposneg_matrix(T* matrix, int n_rows, int n_cols, T
     int workerID = blockIdx.x*blockDim.x + threadIdx.x;
     int n_elements = n_rows * n_cols;
     int col = workerID / n_rows;
-    int row = workerID % n_rows;
     if(workerID<n_elements)
     {
         if(col % 2 == 0)

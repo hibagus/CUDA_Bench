@@ -5,6 +5,12 @@
 #include <cublas_v2.h>
 #include <cutlass/cutlass.h>
 
+enum GPUARCH {  GPUARCH_VOLTA, 
+                GPUARCH_TURING,
+                GPUARCH_AMPERE,
+                GPUARCH_OTHER};
+
+
 static const char *cuBLASGetErrorString(cublasStatus_t error)
 {
     switch (error)

@@ -90,6 +90,7 @@ static inline int gemm_cublas_launch_int(int dim_M, int dim_N, int dim_K, cudaDa
         }
         cudaProfilerStop();
     }
+    gpuErrchk(cudaDeviceSynchronize());
     
 
 
