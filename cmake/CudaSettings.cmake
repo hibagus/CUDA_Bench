@@ -27,7 +27,7 @@ set(GPU_ARCHITECTURE_SUPPORT "86")
 # * Hopper
 #   - 90: H100
 # * Ada Lovelace
-#   - ??: ?????
+#   - 89: RTX 4000, RTX 6000 (Ada), L40
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xptxas -v -G")
