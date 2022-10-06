@@ -75,15 +75,48 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
-_TODO_
+Installation can be done easily through the following steps. Make sure that you have all dependencies configured correctly on your system. 
 
-1. TODO
-2. Clone the repo
+1. Clone the CUDA_Bench Github repository
    ```sh
-   git clone git@github.com:hibagus/CUDA_Bench.git
+   git clone https://github.com/hibagus/CUDA_Bench.git
    ```
-3. TODO
-4. TODO
+2. Change directory to CUDA_Bench
+   ```sh
+   cd CUDA_Bench
+   ```
+3. Clone the submodule
+   ```sh
+   git submodule update --init --recursive
+   ```
+4. Change the target GPU Architecture by setting `set(GPU_ARCHITECTURE_SUPPORT "XX")` using the following command, where `XX` is the CUDA Compute Capability (SM). This setting will be automated in future release.
+   ```sh
+   vi cmake/CUDASettings.cmake
+   ```
+5. Make build directory and go inside it
+   ```sh
+   mkdir build && cd build
+   ```
+6. Run cmake
+   ```sh
+   # Recommended Build
+   cmake -DBUILD_MODE=Release ..
+
+   # Build for Debugging
+   cmake -DBUILD_MODE=Debug ..
+
+   # Build for Profiling with Code Analysis
+   cmake -DBUILD_MODE=Profile ..
+   ```
+7. Run make
+   ```sh
+   make
+   ```
+8. Binaries are available in bin directory
+   ```sh
+   cd ../bin
+   ```
+9. Run appropriate binary by following the instructions of each binary.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
