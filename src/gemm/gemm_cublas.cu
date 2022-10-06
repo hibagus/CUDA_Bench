@@ -71,6 +71,7 @@ int gemm_cublas(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precisi
             // verified
             computeType = CUBLAS_COMPUTE_32F_FAST_16F; 
             algoType    = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+            std::cout << "[WARN] Currently Tensor Cores are not supporting FP32 multiplication and accumulation, and thus lossy precision is used\n";
             gemm_cublas_launch_fp<float, float, float>(dim_M, dim_N, dim_K, mulDataType, accDataType, computeType, algoType, num_iter, print_result, profiling);
         }
         else             

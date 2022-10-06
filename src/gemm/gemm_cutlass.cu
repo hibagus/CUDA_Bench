@@ -3,6 +3,7 @@
 
 #include <CUDA_Bench/gemm/gemm_cutlass.cuh>
 #include <CUDA_Bench/gemm/gemm_cutlass_launch_int.cuh>
+#include <CUDA_Bench/gemm/gemm_cutlass_launch_fp.cuh>
 #include <CUDA_Bench/util/gpuinfo.cuh>
 #include <CUDA_Bench/util/gpucheck.cuh>
 #include <CUDA_Bench/util/precision_select.cuh>
@@ -34,7 +35,87 @@ int gemm_cutlass(int dim_M, int dim_N, int dim_K, Precision mulprecision, Precis
 
 
     // Precision Compability Check
-    if(mulprecision==PRECISION_INT8 && accprecision==PRECISION_INT8)
+    if(mulprecision==PRECISION_FP64 && accprecision==PRECISION_FP64)
+    {
+        if(tensor_cores)
+        {
+            std::cout << "[WARN] Currently Tensor Cores are not supporting FP64 multiplication and accumulation\n";            
+        }
+        
+        switch(gpuarch)
+        {
+            case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp64_fp64_fp64_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp64_fp64_fp64_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp64_fp64_fp64_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+        }
+    }
+    else if(mulprecision==PRECISION_FP32 && accprecision==PRECISION_FP32)
+    {
+        if(tensor_cores)
+        {
+            std::cout << "[WARN] Currently Tensor Cores are not supporting FP32 multiplication and accumulation\n";
+            std::cout << "[WARN] Use CUBLAS for FP32 multiplication and accumulation on Tensor Cores with lossy precision\n";
+        }
+        switch(gpuarch)
+        {
+            case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp32_fp32_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp32_fp32_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp32_fp32_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+            default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+        }
+    }
+    else if(mulprecision==PRECISION_FP16 && accprecision==PRECISION_FP32)
+    {
+        if(tensor_cores)
+        {
+            switch(gpuarch)
+            {
+                case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp32_fp16_fp32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp32_fp16_fp32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp32_fp16_fp32_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+            }
+            
+        }
+        else
+        {
+            switch(gpuarch)
+            {
+                case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp32_fp16_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp32_fp16_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp32_fp16_fp32_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+            }
+        }
+
+    }
+    else if(mulprecision==PRECISION_FP16 && accprecision==PRECISION_FP16)
+    {
+        if(tensor_cores)
+        {
+            switch(gpuarch)
+            {
+                case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp16_fp16_fp16_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp16_fp16_fp16_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp16_fp16_fp16_tc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+            }
+            
+        }
+        else
+        {
+            switch(gpuarch)
+            {
+                case GPUARCH_VOLTA : {gemm_cutlass_launch_volta_fp16_fp16_fp16_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_TURING: {gemm_cutlass_launch_turing_fp16_fp16_fp16_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                case GPUARCH_AMPERE: {gemm_cutlass_launch_ampere_fp16_fp16_fp16_ntc(dim_M, dim_N, dim_K, num_iter, print_result, profiling); break;}
+                default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
+            }
+        }
+
+    }
+    else if(mulprecision==PRECISION_INT8 && accprecision==PRECISION_INT8)
     {
         std::cout << "[WARN] Promoting accumulation precision to int32 to maintain compability\n";
         if(tensor_cores)
