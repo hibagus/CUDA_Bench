@@ -7,7 +7,7 @@
 #include <cutlass/gemm/device/gemm.h>
 #include <cutlass/util/host_tensor.h>
 
-int gemm_cutlass_launch_volta_int32_int8_int32_ntc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_volta_int32_int8_int32_ntc()
 {
     // Launch cutlass for NVIDIA Volta, scale precision int32, multiplication precision int8, accumulation precision int32    
     // Declare the operation precision
@@ -47,12 +47,12 @@ int gemm_cutlass_launch_volta_int32_int8_int32_ntc(int dim_M, int dim_N, int dim
                                              SwizzleThreadBlock,
                                              2>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
 
     return 0;
 }
 
-int gemm_cutlass_launch_turing_int32_int8_int32_ntc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_turing_int32_int8_int32_ntc()
 {
     // Launch cutlass for NVIDIA Turing, scale precision int32, multiplication precision int8, accumulation precision int32    
     // Declare the operation precision
@@ -92,11 +92,11 @@ int gemm_cutlass_launch_turing_int32_int8_int32_ntc(int dim_M, int dim_N, int di
                                              SwizzleThreadBlock,
                                              2>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
-int gemm_cutlass_launch_turing_int32_int8_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_turing_int32_int8_int32_tc()
 {
     // Launch cutlass for NVIDIA Turing, scale precision int32, multiplication precision int8, accumulation precision int32
     // Declare the operation precision
@@ -136,11 +136,11 @@ int gemm_cutlass_launch_turing_int32_int8_int32_tc(int dim_M, int dim_N, int dim
                                              SwizzleThreadBlock,
                                              2>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
-int gemm_cutlass_launch_ampere_int32_int8_int32_ntc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_ampere_int32_int8_int32_ntc()
 {
     // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int8, accumulation precision int32    
     // Declare the operation precision
@@ -180,11 +180,11 @@ int gemm_cutlass_launch_ampere_int32_int8_int32_ntc(int dim_M, int dim_N, int di
                                              SwizzleThreadBlock,
                                              2>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
-int gemm_cutlass_launch_ampere_int32_int8_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_ampere_int32_int8_int32_tc()
 {
     // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int8, accumulation precision int32    
     // Declare the operation precision
@@ -224,11 +224,11 @@ int gemm_cutlass_launch_ampere_int32_int8_int32_tc(int dim_M, int dim_N, int dim
                                              SwizzleThreadBlock,
                                              3>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
-int gemm_cutlass_launch_turing_int32_int4_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_turing_int32_int4_int32_tc()
 {
     // Launch cutlass for NVIDIA Turing, scale precision int32, multiplication precision int4, accumulation precision int32
     // Declare the operation precision
@@ -268,11 +268,11 @@ int gemm_cutlass_launch_turing_int32_int4_int32_tc(int dim_M, int dim_N, int dim
                                              SwizzleThreadBlock,
                                              2>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
-int gemm_cutlass_launch_ampere_int32_int4_int32_tc(int dim_M, int dim_N, int dim_K, int num_iter, bool print_result, bool profiling)
+int gemm_cutlass_launch_ampere_int32_int4_int32_tc()
 {
     // Launch cutlass for NVIDIA Ampere, scale precision int32, multiplication precision int4, accumulation precision int32
     // Declare the operation precision
@@ -312,7 +312,7 @@ int gemm_cutlass_launch_ampere_int32_int4_int32_tc(int dim_M, int dim_N, int dim
                                              SwizzleThreadBlock,
                                              3>;
 
-    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>(dim_M, dim_N, dim_K, num_iter, print_result, profiling);
+    gemm_cutlass_launch_int<Gemm, scalePrecision, mulPrecision, accPrecision>();
     return 0;
 }
 
