@@ -8,6 +8,7 @@ ExternalProject_Add(nvbench
     CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/libs/nvbench
     -DCMAKE_CUDA_ARCHITECTURES=${GPU_ARCHITECTURE_SUPPORT}
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 )
 target_link_libraries(external_nvbench 
     INTERFACE ${CMAKE_SOURCE_DIR}/libs/nvbench/lib/libnvbench.so)

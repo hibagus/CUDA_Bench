@@ -1,35 +1,44 @@
-#pragma once
+
 #include <CUDA_Bench/util/precision_select.cuh>
 #include <CUDA_Bench/util/gpucheck.cuh>
 #include <CUDA_Bench/gemm/gemm_util.cuh>
 #include <CUDA_Bench/gemm/gemm_global.cuh>
+#include <CUDA_Bench/gemm/gemm_cublas_launch_fp.cuh>
 #include <cublas_v2.h>
 #include <cuda_fp16.h>
 #include <cuda_profiler_api.h>
 #include <nvbench/nvbench.cuh>
 
-template<typename S, typename M, typename A>
-int gemm_cublas_launch_fp()
+void gemm_cublas_launch_fp_Bench(nvbench::state& state)
 {
     // Initialize cuBLAS
-	cublasHandle_t handle;	// CUBLAS context
-    gpuErrchk(cublasCreate(&handle));
+	//cublasHandle_t handle;	// CUBLAS context
+    //gpuErrchk(cublasCreate(&handle));
+    printf("TEST\n");
+     state.collect_dram_throughput();
+  state.collect_l1_hit_rates();
+  state.collect_l2_hit_rates();
+  state.collect_loads_efficiency();
+  state.collect_stores_efficiency();
 
     // Device Memory Allocation
-    M* dev_matA;
-    M* dev_matB;
-    A* dev_matC;
-    S alpha = 1.0;
-    S beta  = 0.0;
+    half* dev_matA;
+    half* dev_matB;
+    half* dev_matC;
+    half alpha = 1.0;
+    half beta  = 0.0;
 
-    gpuErrchk(cudaMalloc((void**)&dev_matA, gdim_M * gdim_K * sizeof(M)));
-    gpuErrchk(cudaMalloc((void**)&dev_matB, gdim_K * gdim_N * sizeof(M)));
-    gpuErrchk(cudaMalloc((void**)&dev_matC, gdim_M * gdim_N * sizeof(A)));
+    gpuErrchk(cudaMalloc((void**)&dev_matA, gdim_M * gdim_K * sizeof(half)));
+    gpuErrchk(cudaMalloc((void**)&dev_matB, gdim_K * gdim_N * sizeof(half)));
+    gpuErrchk(cudaMalloc((void**)&dev_matC, gdim_M * gdim_N * sizeof(half)));
 
     // Initialize Matrix
-    initialize_colnegpos_matrix<M><<<((gdim_M*gdim_K)+512-1)/512,512>>>(dev_matA, gdim_M, gdim_K, 1.0);
-    initialize_colposneg_matrix<M><<<((gdim_K*gdim_N)+512-1)/512,512>>>(dev_matB, gdim_K, gdim_N, 1.0);
-    initialize_matrix<A><<<((gdim_M*gdim_N)+512-1)/512,512>>>(dev_matC, gdim_M, gdim_N, 0.0);
+    state.exec(nvbench::exec_tag::sync, [&](nvbench::launch& launch) 
+    {
+    initialize_colnegpos_matrix<half><<<((gdim_M*gdim_K)+512-1)/512,512>>>(dev_matA, gdim_M, gdim_K, 1.0);
+        });
+    initialize_colposneg_matrix<half><<<((gdim_K*gdim_N)+512-1)/512,512>>>(dev_matB, gdim_K, gdim_N, 1.0);
+    initialize_matrix<half><<<((gdim_M*gdim_N)+512-1)/512,512>>>(dev_matC, gdim_M, gdim_N, 0.0);
     gpuErrchk(cudaDeviceSynchronize());
 
     cudaDataType_t mulDataType, accDataType;
@@ -132,9 +141,7 @@ int gemm_cublas_launch_fp()
 
     // Start Multiplication
     //cudaProfilerStart();
-    for(int iter=0;iter<gnum_iter;iter++)
-    {
-        gpuErrchk(cublasGemmEx(handle,                       // handle to cuBLAS library context
+       /* gpuErrchk(cublasGemmEx(handle,                       // handle to cuBLAS library context
                                matA_op,                      // CUBLAS_OP_N, CUBLAS_OP_T, CUBLAS_OP_C
                                matB_op,                      // CUBLAS_OP_N, CUBLAS_OP_T, CUBLAS_OP_C
                                gdim_M,                       // dimension M 
@@ -154,20 +161,20 @@ int gemm_cublas_launch_fp()
                                computeType,                  // Computation Type
                                algoType                      // Computation Algorithm
         ));
-    }
+        */
     //cudaProfilerStop();
 
 
     if(gprint_result)
     {
         std::cout << "Matrix A: " << std::endl;
-        view_matrix_fp<M><<<1,1>>>(dev_matA, gdim_M, gdim_K);
+        view_matrix_fp<half><<<1,1>>>(dev_matA, gdim_M, gdim_K);
         gpuErrchk(cudaDeviceSynchronize());
         std::cout << "Matrix B: " << std::endl;
-        view_matrix_fp<M><<<1,1>>>(dev_matB, gdim_K, gdim_N);
+        view_matrix_fp<half><<<1,1>>>(dev_matB, gdim_K, gdim_N);
         gpuErrchk(cudaDeviceSynchronize());
         std::cout << "Matrix C: " << std::endl;
-        view_matrix_fp<A><<<1,1>>>(dev_matC, gdim_M, gdim_N);
+        view_matrix_fp<half><<<1,1>>>(dev_matC, gdim_M, gdim_N);
         gpuErrchk(cudaDeviceSynchronize());
     }
 
@@ -175,9 +182,5 @@ int gemm_cublas_launch_fp()
     gpuErrchk(cudaFree(dev_matA));
     gpuErrchk(cudaFree(dev_matB));
     gpuErrchk(cudaFree(dev_matC));
-    gpuErrchk(cublasDestroy(handle));
-    return 0;
+    //gpuErrchk(cublasDestroy(handle));
 }
-
-//template<typename S, typename M, typename A>
-void gemm_cublas_launch_fp_Bench(nvbench::state& state);

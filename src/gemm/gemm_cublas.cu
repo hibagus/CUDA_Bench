@@ -2,6 +2,7 @@
 // (C) 2022 Bagus Hanindhito
 
 #include <CUDA_Bench/gemm/gemm_cublas.cuh>
+#include <CUDA_Bench/gemm/gemm_cublas_bench.cuh>
 #include <CUDA_Bench/gemm/gemm_cublas_launch_fp.cuh>
 #include <CUDA_Bench/gemm/gemm_cublas_launch_int.cuh>
 #include <CUDA_Bench/gemm/gemm_util.cuh>
@@ -14,6 +15,8 @@
 #include <cuda_fp16.h>
 #include <cuda_profiler_api.h>
 #include <iostream>
+
+#include <nvbench/nvbench.cuh>
 
 int gemm_cublas()
 {
@@ -38,7 +41,16 @@ int gemm_cublas()
     }
     else if (gmulprecision==PRECISION_FP16 && gaccprecision==PRECISION_FP16)
     {
-        gemm_cublas_launch_fp<half, half, half>();
+        if(gprofiling) 
+        {
+            printf("TESTbefore\n");
+            NVBENCH_BENCH(gemm_cublas_launch_fp_Bench);
+        }
+        else
+        {
+            gemm_cublas_launch_fp<half, half, half>();
+        }
+        
     }
     else if (gmulprecision==PRECISION_INT8 && gaccprecision==PRECISION_INT8)
     {
