@@ -41,16 +41,7 @@ int gemm_cublas()
     }
     else if (gmulprecision==PRECISION_FP16 && gaccprecision==PRECISION_FP16)
     {
-        if(gprofiling) 
-        {
-            printf("TESTbefore\n");
-            NVBENCH_BENCH(gemm_cublas_launch_fp_Bench);
-        }
-        else
-        {
-            gemm_cublas_launch_fp<half, half, half>();
-        }
-        
+        gemm_cublas_launch_fp<half, half, half>();
     }
     else if (gmulprecision==PRECISION_INT8 && gaccprecision==PRECISION_INT8)
     {

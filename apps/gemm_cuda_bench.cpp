@@ -15,6 +15,8 @@ bool gprint_result;       // Global print result
 bool gtensor_cores;       // Global tensor cores
 bool guse_cublas;         // Global use cublas
 bool gprofiling;          // Global profiling
+const int  gargc_nvbench = 3;
+const char *gargv_nvbench[] = {"TEST", "--devices", "0"};
 
 int main(int argc, char *argv[])
 {
@@ -109,7 +111,6 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
 
-    Precision mulprecision;
     if      (str_mulprecision=="fp64") {gmulprecision=PRECISION_FP64;}
     else if (str_mulprecision=="fp32") {gmulprecision=PRECISION_FP32;}
 //  else if (str_mulprecision=="tf32") {gmulprecision=PRECISION_TF32;}
@@ -125,7 +126,6 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
 
-    Precision accprecision;
     if      (str_accprecision=="fp64") {gaccprecision=PRECISION_FP64;}
     else if (str_accprecision=="fp32") {gaccprecision=PRECISION_FP32;}
 //  else if (str_accprecision=="tf32") {gaccprecision=PRECISION_TF32;}
@@ -143,21 +143,33 @@ int main(int argc, char *argv[])
 
     if(guse_cublas)
     {
-        if(mulprecision==PRECISION_INT4 || accprecision==PRECISION_INT4)
+        if(gmulprecision==PRECISION_INT4 || gaccprecision==PRECISION_INT4)
         {
             std::cerr <<"[ERR!] CUBLAS GEMM implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
             std::exit(1);
         }
         else
         {
-            std::cerr <<"[INFO] Program is using NVIDIA CUBLAS library for GEMM\n";
+            std::cout <<"[INFO] Program is using NVIDIA CUBLAS library for GEMM\n";
             gemm_cublas();
         }
     }
     else
     {
-        std::cerr <<"[INFO] Program is using NVIDIA CUTLASS library for GEMM\n";
+        std::cout <<"[INFO] Program is using NVIDIA CUTLASS library for GEMM\n";
         gemm_cutlass();
+        //if(gprofiling)
+        //{
+        //    const char* args[3] = {argv[0], "--devices", "0"};
+        //    NVBENCH_BENCH(gemm_cutlass);
+        //    std::cout<<argc<<std::endl;
+        //    NVBENCH_MAIN_BODY(3, args);
+        //}
+        //else
+        //{
+        //    std::cout<<argc<<std::endl;
+        //    gemm_cutlass();
+        //}
     }    
     return 0;
 }

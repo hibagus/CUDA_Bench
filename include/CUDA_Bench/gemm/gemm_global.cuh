@@ -12,3 +12,5 @@ extern bool gprint_result;
 extern bool gtensor_cores;
 extern bool guse_cublas;
 extern bool gprofiling;
+extern const int gargc_nvbench;
+extern const char *gargv_nvbench[];
