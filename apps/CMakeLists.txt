@@ -6,7 +6,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 # GEMM benchmark
 set(GEMM_BENCH_EXECUTABLE_NAME "gemm_cuda_bench")
 add_executable(${GEMM_BENCH_EXECUTABLE_NAME} gemm_cuda_bench.cpp)
-add_dependencies(${GEMM_BENCH_EXECUTABLE_NAME} argparse)
+add_dependencies(${GEMM_BENCH_EXECUTABLE_NAME} argparse nvbench)
 set_target_properties(${GEMM_BENCH_EXECUTABLE_NAME}
                         PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
                         CUDA_ARCHITECTURES "${GPU_ARCHITECTURE_SUPPORT}"
