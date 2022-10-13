@@ -15,6 +15,7 @@
 template<typename Gemm, typename scalePrecision, typename mulPrecision, typename accPrecision>
 int gemm_cutlass_launch_int()
 {
+    cudaEvent_t time_start, time_stop;
     // Problem Size
     cutlass::gemm::GemmCoord problem_dim(gdim_M, gdim_N, gdim_K);
 
@@ -58,6 +59,9 @@ int gemm_cutlass_launch_int()
     gpuErrchk(gemm_op.initialize(arguments, workspace.get()));
 
     // Launch initialized CUTLASS kernel
+    cudaEventCreate(&time_start);
+    cudaEventCreate(&time_stop);
+    cudaEventRecord(time_start,0);
     cudaProfilerStart();
     for(int iter=0;iter<gnum_iter;iter++)
     {
@@ -65,6 +69,13 @@ int gemm_cutlass_launch_int()
     }
     cudaProfilerStop();
     gpuErrchk(cudaDeviceSynchronize());
+    cudaEventRecord(time_stop, 0);
+    cudaEventSynchronize(time_stop);
+    float elapsedTime;
+    cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
+    cudaEventDestroy(time_start);
+    cudaEventDestroy(time_stop);
+    std::cout << "[INFO] Execution Time: " << elapsedTime << "ms for " << gnum_iter << " iterations (" << elapsedTime/gnum_iter << "ms/iteration)" << std::endl;
 
     if(gprint_result)
     {

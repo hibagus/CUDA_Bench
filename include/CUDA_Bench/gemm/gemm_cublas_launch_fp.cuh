@@ -11,6 +11,7 @@
 template<typename S, typename M, typename A>
 int gemm_cublas_launch_fp()
 {
+    cudaEvent_t time_start, time_stop;
     // Initialize cuBLAS
 	cublasHandle_t handle;	// CUBLAS context
     gpuErrchk(cublasCreate(&handle));
@@ -131,6 +132,9 @@ int gemm_cublas_launch_fp()
     }
 
     // Start Multiplication
+    cudaEventCreate(&time_start);
+    cudaEventCreate(&time_stop);
+    cudaEventRecord(time_start,0);
     cudaProfilerStart();
     for(int iter=0;iter<gnum_iter;iter++)
     {
@@ -156,6 +160,14 @@ int gemm_cublas_launch_fp()
         ));
     }
     cudaProfilerStop();
+    gpuErrchk(cudaDeviceSynchronize());
+    cudaEventRecord(time_stop, 0);
+    cudaEventSynchronize(time_stop);
+    float elapsedTime;
+    cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
+    cudaEventDestroy(time_start);
+    cudaEventDestroy(time_stop);
+    std::cout << "[INFO] Execution Time: " << elapsedTime << "ms for " << gnum_iter << " iterations (" << elapsedTime/gnum_iter << "ms/iteration)" << std::endl;
 
 
     if(gprint_result)
@@ -369,6 +381,7 @@ int gemm_cublas_launch_fp(nvbench::state& state)
             ));
         }
         cudaProfilerStop();
+        gpuErrchk(cudaDeviceSynchronize());
     }
 
     if(gprint_result)

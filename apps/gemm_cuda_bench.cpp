@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     // Program Title
     std::cout << "[INFO] CUDA Bench - General Matrix-Matrix Multiplication (GEMM) \n";
     std::cout << "[INFO] Version 1.0.0 (C)2022 Bagus Hanindhito \n";
-    std::cout << "[INFO] Matrix multiplication follows equation: C = (alpha)x(AxB) + (beta)xC\n";
+    std::cout << "[INFO] Matrix-Matrix multiplication follows equation: C = (alpha)x(AxB) + (beta)xC\n";
     std::cout << "[INFO] where alpha=1.00, beta=0.00, and A[MxK], B[KxN], and C[MxN] are matrices \n\n\n";
 
     // Arguments Parser
