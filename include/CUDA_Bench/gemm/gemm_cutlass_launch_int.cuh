@@ -141,13 +141,13 @@ int gemm_cutlass_launch_int(nvbench::state& state)
         state.collect_loads_efficiency();
         state.collect_stores_efficiency();
         cudaProfilerStart();
-        state.exec(nvbench::exec_tag::sync, [&](nvbench::launch& launch) 
-        {
         for(int iter=0;iter<gnum_iter;iter++)
         {
-            gpuErrchk(gemm_op());
+            state.exec(nvbench::exec_tag::sync, [&](nvbench::launch& launch) 
+            {
+                gpuErrchk(gemm_op());
+            });
         }
-        });
         cudaProfilerStop();
         gpuErrchk(cudaDeviceSynchronize());
     }
@@ -162,10 +162,6 @@ int gemm_cutlass_launch_int(nvbench::state& state)
         gpuErrchk(cudaDeviceSynchronize());
     }
     
-    
-    
-    
-
     if(gprint_result)
     {
         std::cout << "Matrix A: " << std::endl;
@@ -186,11 +182,23 @@ int gemm_cutlass_launch_int(nvbench::state& state)
 }
 
 int gemm_cutlass_launch_volta_int32_int8_int32_ntc();
+int gemm_cutlass_launch_volta_int32_int8_int32_ntc(nvbench::state& state);
+
 int gemm_cutlass_launch_turing_int32_int8_int32_ntc();
+int gemm_cutlass_launch_turing_int32_int8_int32_ntc(nvbench::state& state);
+
 int gemm_cutlass_launch_turing_int32_int8_int32_tc();
+int gemm_cutlass_launch_turing_int32_int8_int32_tc(nvbench::state& state);
+
 int gemm_cutlass_launch_ampere_int32_int8_int32_ntc();
+int gemm_cutlass_launch_ampere_int32_int8_int32_ntc(nvbench::state& state);
+
 int gemm_cutlass_launch_ampere_int32_int8_int32_tc();
+int gemm_cutlass_launch_ampere_int32_int8_int32_tc(nvbench::state& state);
+
 int gemm_cutlass_launch_turing_int32_int4_int32_tc();
+int gemm_cutlass_launch_turing_int32_int4_int32_tc(nvbench::state& state);
+
 int gemm_cutlass_launch_ampere_int32_int4_int32_tc();
 int gemm_cutlass_launch_ampere_int32_int4_int32_tc(nvbench::state& state);
 
