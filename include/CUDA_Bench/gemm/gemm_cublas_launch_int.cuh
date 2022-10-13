@@ -109,7 +109,7 @@ static inline int gemm_cublas_launch_int()
     gpuErrchk(cudaDeviceSynchronize());
     cudaEventRecord(time_stop, 0);
     cudaEventSynchronize(time_stop);
-    double elapsedTime;
+    float elapsedTime;
     cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
     cudaEventDestroy(time_start);
     cudaEventDestroy(time_stop);
