@@ -1,4 +1,5 @@
 include (ExternalProject)
+include (GNUInstallDirs)
 
 # nvBench
 add_library(external_nvbench INTERFACE)
@@ -10,13 +11,8 @@ ExternalProject_Add(nvbench
     -DCMAKE_CUDA_ARCHITECTURES=${GPU_ARCHITECTURE_SUPPORT}
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 )
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/libs/nvbench/lib/libnvbench.so)
-   set(NVBench_Lib ${CMAKE_SOURCE_DIR}/libs/nvbench/lib64/libnvbench.so)
-else()
-   set(NVBench_Lib ${CMAKE_SOURCE_DIR}/libs/nvbench/lib/libnvbench.so)
-endif()
 target_link_libraries(external_nvbench 
-    INTERFACE ${NVBench_Lib})
+    INTERFACE ${CMAKE_SOURCE_DIR}/libs/nvbench/${CMAKE_INSTALL_LIBDIR}/libnvbench.so)
 target_include_directories(external_nvbench
     INTERFACE ${CMAKE_SOURCE_DIR}/libs/nvbench/include)
 
