@@ -13,4 +13,4 @@ set_target_properties(${GEMM_BENCH_EXECUTABLE_NAME}
                         CXX_STANDARD 17)
   
 target_link_libraries(${GEMM_BENCH_EXECUTABLE_NAME}
-                      PRIVATE ${PROJECT_GEMM_LIB} external_argparse)
+                      PRIVATE ${PROJECT_GEMM_LIB} external_argparse external_nvbench -lcuda)

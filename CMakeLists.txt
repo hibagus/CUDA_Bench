@@ -11,6 +11,7 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
    message(SEND_ERROR "In-source builds are not allowed.")
 endif()
 
+find_package(CUDA REQUIRED)
 # set to Release to enable optimization
 #        Debug for debugging
 if(${BUILD_MODE} STREQUAL Debug)
