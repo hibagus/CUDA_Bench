@@ -1,12 +1,11 @@
 #include <argparse/argparse.hpp>
-#include <CUDA_Bench/gemm/gemm_cublas.cuh>
-#include <CUDA_Bench/gemm/gemm_cutlass.cuh>
+#include <CUDA_Bench/gemv/gemv_cublas.cuh>
+#include <CUDA_Bench/gemv/gemv_cutlass.cuh>
 #include <CUDA_Bench/util/precision_select.cuh>
-#include <CUDA_Bench/gemm/gemm_global.cuh>
+#include <CUDA_Bench/gemv/gemv_global.cuh>
 
 // This is global variables needed by NVBench :(
 int gdim_M;               // Global dimension of M
-int gdim_N;               // Global dimension of N
 int gdim_K;               // Global dimension of K
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
@@ -16,26 +15,23 @@ bool gtensor_cores;       // Global tensor cores
 bool guse_cublas;         // Global use cublas
 bool gprofiling;          // Global profiling
 const int  gargc_nvbench = 3;
-const char *gargv_nvbench[] = {"gemm_cuda_bench", "--devices", "0"};
+const char *gargv_nvbench[] = {"gemv_cuda_bench", "--devices", "0"};
 
 int main(int argc, char *argv[])
 {
     // Program Title
-    std::cout << "[INFO] CUDA Bench - General Matrix-Matrix Multiplication (GEMM) \n";
+    std::cout << "[INFO] CUDA Bench - General Matrix-Vector Multiplication (GEMV) \n";
     std::cout << "[INFO] Version 1.0.0 (C)2022 Bagus Hanindhito \n";
-    std::cout << "[INFO] Matrix-Matrix multiplication follows equation: C = (alpha)x(AxB) + (beta)xC\n";
-    std::cout << "[INFO] where alpha=1.00, beta=0.00, and A[MxK], B[KxN], and C[MxN] are matrices \n\n\n";
+    std::cout << "[INFO] Matrix-Vector multiplication follows equation: C = (alpha)x(AxB) + (beta)xC\n";
+    std::cout << "[INFO] where alpha=1.00, beta=0.00, and A[MxK] is matrix, B[K] and C[M] are vectors \n\n\n";
 
     // Arguments Parser
     argparse::ArgumentParser program(argv[0], "1.0.0", argparse::default_arguments::help);
         program.add_argument("dim_M")
-            .help("Positive integer that describes M dimension of the matrices A(MxK) and C(MxN)")
-            .scan<'i', int>();
-        program.add_argument("dim_N")
-            .help("Positive integer that describes N dimension of the matrices B(KxN) and C(MxN)")
+            .help("Positive integer that describes M dimension of the matrix A(MxK) and vector C(M)")
             .scan<'i', int>();
         program.add_argument("dim_K")
-            .help("Positive integer that describes K dimension of the matrices A(MxK) and B(KxN)")
+            .help("Positive integer that describes K dimension of the matrix A(MxK) and vector B(K)")
             .scan<'i', int>();
         program.add_argument("-R", "--result")
             .help("Show result at the end of program")
@@ -83,7 +79,6 @@ int main(int argc, char *argv[])
 
     // Argument Processing
     gdim_M = program.get<int>("dim_M");
-    gdim_N = program.get<int>("dim_N");
     gdim_K = program.get<int>("dim_K");
 
     gnum_iter = program.get<int>("--iterations");
@@ -97,9 +92,9 @@ int main(int argc, char *argv[])
     guse_cublas   = program.get<bool>("--usecublas");
 
     // Argument Validation
-    if(gdim_M<=0 || gdim_N<=0 || gdim_K<=0)
+    if(gdim_M<=0 || gdim_K<=0)
     {
-        std::cerr <<"[ERR!] Argument parsing error: Matrices' dimensions must be positive integers\n\n\n";
+        std::cerr <<"[ERR!] Argument parsing error: Matrix/Vector dimensions must be positive integers\n\n\n";
         std::cerr << program;
         std::exit(1);
     }
@@ -121,7 +116,7 @@ int main(int argc, char *argv[])
 //  else if (str_mulprecision=="int1") {gmulprecision=PRECISION_INT1;}
     else
     {
-        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix multiplication precision\n\n\n";
+        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix/vector multiplication precision\n\n\n";
         std::cerr << program;
         std::exit(1);
     }
@@ -136,7 +131,7 @@ int main(int argc, char *argv[])
 //  else if (str_accprecision=="int1") {gaccprecision=PRECISION_INT1;}
     else
     {
-        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix accumulation precision\n\n\n";
+        std::cerr <<"[ERR!] Argument parsing error: Unsupported matrix/vector accumulation precision\n\n\n";
         std::cerr << program;
         std::exit(1);
     }
@@ -145,19 +140,19 @@ int main(int argc, char *argv[])
     {
         if(gmulprecision==PRECISION_INT4 || gaccprecision==PRECISION_INT4)
         {
-            std::cerr <<"[ERR!] CUBLAS GEMM implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
+            std::cerr <<"[ERR!] CUBLAS GEMV implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
             std::exit(1);
         }
         else
         {
-            std::cout <<"[INFO] Program is using NVIDIA CUBLAS library for GEMM\n";
-            gemm_cublas();
+            std::cout <<"[INFO] Program is using NVIDIA CUBLAS library for GEMV\n";
+            gemv_cublas();
         }
     }
     else
     {
-        std::cout <<"[INFO] Program is using NVIDIA CUTLASS library for GEMM\n";
-        gemm_cutlass();
+        std::cout <<"[INFO] Program is using NVIDIA CUTLASS library for GEMV\n";
+        gemv_cutlass();
     }    
     return 0;
 }

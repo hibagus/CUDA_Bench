@@ -17,6 +17,7 @@ endmacro()
 
 # Iterate through source files
 add_subdirectory(gemm)
+add_subdirectory(gemv)
 
 
 # Set Library
@@ -28,4 +29,14 @@ set_target_properties(${PROJECT_GEMM_LIB}
                         CUDA_ARCHITECTURES ${GPU_ARCHITECTURE_SUPPORT}
                         CXX_STANDARD 17)
 target_link_libraries(${PROJECT_GEMM_LIB}
+                      PRIVATE -lcublas external_cutlass external_nvbench)
+
+## PROJECT_GEMV_LIB
+add_library(${PROJECT_GEMV_LIB} STATIC ${PROJECT_GEMV_SRC})
+add_dependencies(${PROJECT_GEMV_LIB} nvbench cutlass)
+set_target_properties(${PROJECT_GEMV_LIB}
+                        PROPERTIES CUDA_SEPARABLE_COMPILATION ON
+                        CUDA_ARCHITECTURES ${GPU_ARCHITECTURE_SUPPORT}
+                        CXX_STANDARD 17)
+target_link_libraries(${PROJECT_GEMV_LIB}
                       PRIVATE -lcublas external_cutlass external_nvbench)
