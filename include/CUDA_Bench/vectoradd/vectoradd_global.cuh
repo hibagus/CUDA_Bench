@@ -2,8 +2,8 @@
 #include <CUDA_Bench/util/precision_select.cuh>
 
 // This is global variables that need to be used for NVBench :(
-extern int gorigdim_M;
-extern int gdim_M;
+extern long gorigdim_M;
+extern long gdim_M;
 extern int gnum_iter;
 extern Precision gmulprecision;
 extern Precision gaccprecision;

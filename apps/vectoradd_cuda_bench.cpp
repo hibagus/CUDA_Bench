@@ -5,8 +5,8 @@
 #include <CUDA_Bench/vectoradd/vectoradd_global.cuh>
 
 // This is global variables needed by NVBench :(
-int gorigdim_M;           // Global original dimension of M
-int gdim_M;               // Global dimension of M
+long gorigdim_M;           // Global original dimension of M
+long gdim_M;               // Global dimension of M
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
 Precision gaccprecision;  // Global accumulation precision
@@ -148,7 +148,8 @@ int main(int argc, char *argv[])
         int num_element = start*start;
         while(num_element<gorigdim_M)
         {
-            start=start+1;
+            if(gtensor_cores) {start=start+8;}
+            else {start=start+1;}
             num_element = start*start;
         }
         gdim_M = start;
