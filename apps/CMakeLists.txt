@@ -38,3 +38,15 @@ set_target_properties(${VectorAdd_BENCH_EXECUTABLE_NAME}
   
 target_link_libraries(${VectorAdd_BENCH_EXECUTABLE_NAME}
                       PRIVATE ${PROJECT_VectorAdd_LIB} external_argparse external_nvbench -lcuda)
+
+# FIR benchmark
+set(FIR_BENCH_EXECUTABLE_NAME "fir_cuda_bench")
+add_executable(${FIR_BENCH_EXECUTABLE_NAME} fir_cuda_bench.cpp)
+add_dependencies(${FIR_BENCH_EXECUTABLE_NAME} argparse nvbench)
+set_target_properties(${FIR_BENCH_EXECUTABLE_NAME}
+                        PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
+                        CUDA_ARCHITECTURES "${GPU_ARCHITECTURE_SUPPORT}"
+                        CXX_STANDARD 17)
+  
+target_link_libraries(${FIR_BENCH_EXECUTABLE_NAME}
+                      PRIVATE ${PROJECT_FIR_LIB} external_argparse external_nvbench -lcuda)

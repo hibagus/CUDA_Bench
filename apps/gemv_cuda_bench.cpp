@@ -5,8 +5,8 @@
 #include <CUDA_Bench/gemv/gemv_global.cuh>
 
 // This is global variables needed by NVBench :(
-int gdim_M;               // Global dimension of M
-int gdim_K;               // Global dimension of K
+long gdim_M;               // Global dimension of M
+long gdim_K;               // Global dimension of K
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
 Precision gaccprecision;  // Global accumulation precision
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
             .implicit_value(true)
             .metavar("CUDACORES");
         program.add_argument("-B", "--usecublas")
-            .help("Use NVIDIA CUBLAS library instead of NVIDIA CUTLASS for GEMM")
+            .help("Use NVIDIA CUBLAS library instead of NVIDIA CUTLASS for GEMV")
             .default_value(false)
             .implicit_value(true)
             .metavar("CUBLAS");

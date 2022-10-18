@@ -1,12 +1,13 @@
 #include <argparse/argparse.hpp>
-//#include <CUDA_Bench/vectoradd/vectoradd_cublas.cuh>
-#include <CUDA_Bench/vectoradd/vectoradd_cutlass.cuh>
+#include <CUDA_Bench/fir/fir_cublas.cuh>
+#include <CUDA_Bench/fir/fir_cutlass.cuh>
 #include <CUDA_Bench/util/precision_select.cuh>
-#include <CUDA_Bench/vectoradd/vectoradd_global.cuh>
+#include <CUDA_Bench/fir/fir_global.cuh>
 
 // This is global variables needed by NVBench :(
-long gorigdim_M;           // Global original dimension of M
-long gdim_M;               // Global dimension of M
+long gdim_S;              // Global Padded Signal Dimension 
+long gdim_M;              // Global dimension of M
+long gdim_K;              // Global dimension of K
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
 Precision gaccprecision;  // Global accumulation precision
@@ -14,28 +15,28 @@ bool gprint_result;       // Global print result
 bool gtensor_cores;       // Global tensor cores
 bool guse_cublas;         // Global use cublas
 bool gprofiling;          // Global profiling
-bool galternate;          // Global alternate
 const int  gargc_nvbench = 3;
-const char *gargv_nvbench[] = {"vectoradd_cuda_bench", "--devices", "0"};
+const char *gargv_nvbench[] = {"fir_cuda_bench", "--devices", "0"};
 
 int main(int argc, char *argv[])
 {
     // Program Title
-    std::cout << "[INFO] CUDA Bench - Vectors Addition (VectorAdd) \n";
+    std::cout << "[INFO] CUDA Bench - Finite Impulse Response Filter (FIR) \n";
     std::cout << "[INFO] Version 1.0.0 (C)2022 Bagus Hanindhito \n";
-    std::cout << "[INFO] Vector-Vector addition follows equation: C = (alpha)x(AxB) + (beta)xC\n";
-    std::cout << "[INFO] where alpha=1.00, beta=1.00, A[MxM] is identity matrix, B[M] and C[M] are vectors \n\n\n";
+    std::cout << "[INFO] FIR filter follows equation: y[n] = f0*x[n] + f1*x[n-1] + ... + fK*x[n-K] \n";
+    std::cout << "[INFO] where f0..fK is filter coefficient in the form of vector F[K], \n";
+    std::cout << "[INFO] x[n]..x[n-K] is part of input signal in the form of vector X[M], \n";
+    std::cout << "[INFO] and produce an output vector Y[M] \n\n\n";
+
 
     // Arguments Parser
     argparse::ArgumentParser program(argv[0], "1.0.0", argparse::default_arguments::help);
         program.add_argument("dim_M")
-            .help("Positive integer that describes M dimension of both vectors B(M) and C(M)")
+            .help("Positive integer that describes the length of input signal vector, X[M].")
             .scan<'i', int>();
-        program.add_argument("-O", "--optimize")
-            .help("Allow program to construct matrices instead of vectors to improve tensor core performance")
-            .default_value(false)
-            .implicit_value(true)
-            .metavar("ALT");
+        program.add_argument("dim_K")
+            .help("Positive integer that describes the length of filter vector, F[K].")
+            .scan<'i', int>();
         program.add_argument("-R", "--result")
             .help("Show result at the end of program")
             .default_value(false)
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
             .implicit_value(true)
             .metavar("CUDACORES");
         program.add_argument("-B", "--usecublas")
-            .help("Use NVIDIA CUBLAS library instead of NVIDIA CUTLASS for VectorAdd")
+            .help("Use NVIDIA CUBLAS library instead of NVIDIA CUTLASS for FIR")
             .default_value(false)
             .implicit_value(true)
             .metavar("CUBLAS");
@@ -81,7 +82,8 @@ int main(int argc, char *argv[])
     }
 
     // Argument Processing
-    gorigdim_M = program.get<int>("dim_M");
+    gdim_M = program.get<int>("dim_M");
+    gdim_K = program.get<int>("dim_K");
 
     gnum_iter = program.get<int>("--iterations");
 
@@ -92,12 +94,11 @@ int main(int argc, char *argv[])
     gtensor_cores = !(program.get<bool>("--cudacoresonly"));
     gprofiling    = program.get<bool>("--profile");
     guse_cublas   = program.get<bool>("--usecublas");
-    galternate    = program.get<bool>("--optimize");
 
     // Argument Validation
-    if(gorigdim_M<=0)
+    if(gdim_M<=0 || gdim_K<=0)
     {
-        std::cerr <<"[ERR!] Argument parsing error: Matrix/Vector dimensions must be positive integers\n\n\n";
+        std::cerr <<"[ERR!] Argument parsing error: Input/Filter dimensions must be positive integers\n\n\n";
         std::cerr << program;
         std::exit(1);
     }
@@ -139,45 +140,27 @@ int main(int argc, char *argv[])
         std::exit(1);
     }
 
-    // alternate mode or not
-    if(galternate)
-    {
-        int start;
-        if(gtensor_cores) { start=32; }
-        else { start=1; }
-        int num_element = start*start;
-        while(num_element<gorigdim_M)
-        {
-            if(gtensor_cores) {start=start+8;}
-            else {start=start+1;}
-            num_element = start*start;
-        }
-        gdim_M = start;
-    }
-    else
-    {
-        gdim_M = gorigdim_M;
-    }
+    // Calculate matrices size
+    int padding = gdim_K - (gdim_M % gdim_K); //total input signal length modulo the filter length
+    gdim_S = gdim_M + padding;
 
     if(guse_cublas)
     {
         if(gmulprecision==PRECISION_INT4 || gaccprecision==PRECISION_INT4)
         {
-            std::cerr <<"[ERR!] CUBLAS VectorAdd implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
+            std::cerr <<"[ERR!] CUBLAS FIR implementation currently only supports fp64, fp32, fp16, and int8\n\n\n";
             std::exit(1);
         }
         else
         {
-            std::cout <<"[ERR!] CUBLAS version for VectorAdd is unimplemented yet!\n";
-            std::exit(1);
-            //std::cout <<"[INFO] Program is using NVIDIA CUBLAS library for VectorAdd\n";
-            //vectoradd_cublas();
+            std::cout <<"[INFO] Program is using NVIDIA CUBLAS library for FIR\n";
+            fir_cublas();
         }
     }
     else
     {
-        std::cout <<"[INFO] Program is using NVIDIA CUTLASS library for VectorAdd\n";
-        vectoradd_cutlass();
+        std::cout <<"[INFO] Program is using NVIDIA CUTLASS library for FIR\n";
+        fir_cutlass();
     }    
     return 0;
 }

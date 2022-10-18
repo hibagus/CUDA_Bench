@@ -5,6 +5,20 @@
 #include <cutlass/cutlass.h>
 #include <iostream>
 
+
+template<typename T>
+__global__ void vector_to_matrix_fir(T* signalvector, T* signalmatrix, long signal_length, long filter_length)
+{
+    long workerID = blockIdx.x*blockDim.x + threadIdx.x;
+    long n_copy = signal_length * filter_length;
+    if(workerID<n_copy)
+    {
+        long signal_offset  = workerID / filter_length;
+        long filter_element = workerID % filter_length;
+        signalmatrix[workerID] = signalvector[signal_offset+filter_element];
+    }
+}
+
 template<typename T>
 __global__ void initialize_matrix(T* matrix, long n_rows, long n_cols, T val)
 {
@@ -17,11 +31,31 @@ __global__ void initialize_matrix(T* matrix, long n_rows, long n_cols, T val)
 }
 
 template<typename T>
-__global__ void initialize_colnegpos_matrix(T* matrix, long n_rows, long n_cols, T val)
+__global__ void initialize_identity_matrix(T* matrix, int n_rows, int n_cols)
 {
-    long workerID = blockIdx.x*blockDim.x + threadIdx.x;
-    long n_elements = n_rows * n_cols;
-    long col = workerID / n_rows;
+    int workerID = blockIdx.x*blockDim.x + threadIdx.x;
+    int n_elements = n_rows * n_cols;
+    int col = workerID / n_rows;
+    int row = workerID % n_rows;
+    if(workerID<n_elements)
+    {
+        if(col == row)
+        {
+            matrix[workerID] = 1;
+        }
+        else
+        {
+            matrix[workerID] = 0;
+        }
+    }
+}
+
+template<typename T>
+__global__ void initialize_colnegpos_matrix(T* matrix, int n_rows, int n_cols, T val)
+{
+    int workerID = blockIdx.x*blockDim.x + threadIdx.x;
+    int n_elements = n_rows * n_cols;
+    int col = workerID / n_rows;
     if(workerID<n_elements)
     {
         if(col % 2 == 0)
@@ -36,11 +70,11 @@ __global__ void initialize_colnegpos_matrix(T* matrix, long n_rows, long n_cols,
 }
 
 template<typename T>
-__global__ void initialize_rownegpos_matrix(T* matrix, long n_rows, long n_cols, T val)
+__global__ void initialize_rownegpos_matrix(T* matrix, int n_rows, int n_cols, T val)
 {
-    long workerID = blockIdx.x*blockDim.x + threadIdx.x;
-    long n_elements = n_rows * n_cols;
-    long row = workerID % n_rows;
+    int workerID = blockIdx.x*blockDim.x + threadIdx.x;
+    int n_elements = n_rows * n_cols;
+    int row = workerID % n_rows;
     if(workerID<n_elements)
     {
         if(row % 2 == 0)
@@ -55,11 +89,11 @@ __global__ void initialize_rownegpos_matrix(T* matrix, long n_rows, long n_cols,
 }
 
 template<typename T>
-__global__ void initialize_colposneg_matrix(T* matrix, long n_rows, long n_cols, T val)
+__global__ void initialize_colposneg_matrix(T* matrix, int n_rows, int n_cols, T val)
 {
-    long workerID = blockIdx.x*blockDim.x + threadIdx.x;
-    long n_elements = n_rows * n_cols;
-    long col = workerID / n_rows;
+    int workerID = blockIdx.x*blockDim.x + threadIdx.x;
+    int n_elements = n_rows * n_cols;
+    int col = workerID / n_rows;
     if(workerID<n_elements)
     {
         if(col % 2 == 0)
