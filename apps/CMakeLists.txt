@@ -26,3 +26,15 @@ set_target_properties(${GEMV_BENCH_EXECUTABLE_NAME}
   
 target_link_libraries(${GEMV_BENCH_EXECUTABLE_NAME}
                       PRIVATE ${PROJECT_GEMV_LIB} external_argparse external_nvbench -lcuda)
+
+# VectorAdd benchmark
+set(VectorAdd_BENCH_EXECUTABLE_NAME "vectoradd_cuda_bench")
+add_executable(${VectorAdd_BENCH_EXECUTABLE_NAME} vectoradd_cuda_bench.cpp)
+add_dependencies(${VectorAdd_BENCH_EXECUTABLE_NAME} argparse nvbench)
+set_target_properties(${VectorAdd_BENCH_EXECUTABLE_NAME}
+                        PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
+                        CUDA_ARCHITECTURES "${GPU_ARCHITECTURE_SUPPORT}"
+                        CXX_STANDARD 17)
+  
+target_link_libraries(${VectorAdd_BENCH_EXECUTABLE_NAME}
+                      PRIVATE ${PROJECT_VectorAdd_LIB} external_argparse external_nvbench -lcuda)
