@@ -50,3 +50,15 @@ set_target_properties(${FIR_BENCH_EXECUTABLE_NAME}
   
 target_link_libraries(${FIR_BENCH_EXECUTABLE_NAME}
                       PRIVATE ${PROJECT_FIR_LIB} external_argparse external_nvbench -lcuda)
+
+# Conv2D benchmark
+set(CONV2D_BENCH_EXECUTABLE_NAME "conv2d_cuda_bench")
+add_executable(${CONV2D_BENCH_EXECUTABLE_NAME} conv2d_cuda_bench.cpp)
+add_dependencies(${CONV2D_BENCH_EXECUTABLE_NAME} argparse nvbench)
+set_target_properties(${CONV2D_BENCH_EXECUTABLE_NAME}
+                        PROPERTIES CUDA_SEPARABLE_COMPILATION ON 
+                        CUDA_ARCHITECTURES "${GPU_ARCHITECTURE_SUPPORT}"
+                        CXX_STANDARD 17)
+  
+target_link_libraries(${CONV2D_BENCH_EXECUTABLE_NAME}
+                      PRIVATE ${PROJECT_CONV2D_LIB} external_argparse external_nvbench -lcuda)
