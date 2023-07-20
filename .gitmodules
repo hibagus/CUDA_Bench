@@ -7,6 +7,3 @@
 [submodule "3rdParty/cutlass"]
 	path = 3rdParty/cutlass
 	url = https://github.com/NVIDIA/cutlass.git
-[submodule "3rdParty/arrayfire"]
-	path = 3rdParty/arrayfire
-	url = https://github.com/arrayfire/arrayfire.git
