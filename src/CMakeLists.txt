@@ -20,7 +20,6 @@ add_subdirectory(gemm)
 add_subdirectory(gemv)
 add_subdirectory(vectoradd)
 add_subdirectory(fir)
-add_subdirectory(conv2d)
 
 
 # Set Library
@@ -62,14 +61,4 @@ set_target_properties(${PROJECT_FIR_LIB}
                         CUDA_ARCHITECTURES ${GPU_ARCHITECTURE_SUPPORT}
                         CXX_STANDARD 17)
 target_link_libraries(${PROJECT_FIR_LIB}
-                      PRIVATE -lcublas external_cutlass external_nvbench)
-
-## PROJECT_FIR_LIB
-add_library(${PROJECT_CONV2D_LIB} STATIC ${PROJECT_CONV2D_SRC})
-add_dependencies(${PROJECT_CONV2D_LIB} nvbench cutlass)
-set_target_properties(${PROJECT_CONV2D_LIB}
-                        PROPERTIES CUDA_SEPARABLE_COMPILATION ON
-                        CUDA_ARCHITECTURES ${GPU_ARCHITECTURE_SUPPORT}
-                        CXX_STANDARD 17)
-target_link_libraries(${PROJECT_CONV2D_LIB}
                       PRIVATE -lcublas external_cutlass external_nvbench)
