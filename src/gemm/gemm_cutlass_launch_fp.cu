@@ -389,6 +389,7 @@ int gemm_cutlass_launch_ampere_fp16_fp16_fp16_tc()
     using ShapeMMAThreadBlock = cutlass::gemm::GemmShape<128, 128, 64>; // Thread Block Shape 
     using ShapeMMAWarp        = cutlass::gemm::GemmShape<64, 64, 64>;   // Warp Shape
     using ShapeMMAOp          = cutlass::gemm::GemmShape<16, 8, 16>;    // Instruction Shape
+    //using ShapeMMAOp          = cutlass::gemm::GemmShape<16, 8, 8>;    // Instruction Shape
 
     using SwizzleThreadBlock  = cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>; // default
     using EpilogueOutputOp    = cutlass::epilogue::thread::LinearCombination<accPrecision, 128/cutlass::sizeof_bits<accPrecision>::value, accPrecision, accPrecision>;

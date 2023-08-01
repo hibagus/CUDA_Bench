@@ -153,11 +153,13 @@ int main(int argc, char *argv[])
             num_element = start*start;
         }
         gdim_M = start;
+        std::cout << "[INFO] Using Optimization with Matrix Size: " <<  gdim_M << "\n";
     }
     else
     {
         gdim_M = gorigdim_M;
     }
+
 
     if(guse_cublas)
     {

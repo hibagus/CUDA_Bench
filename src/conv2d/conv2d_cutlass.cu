@@ -3,7 +3,7 @@
 
 #include <CUDA_Bench/conv2d/conv2d_cutlass.cuh>
 #include <CUDA_Bench/conv2d/conv2d_cutlass_launch_int.cuh>
-//#include <CUDA_Bench/conv2d/conv2d_cutlass_launch_fp.cuh>
+#include <CUDA_Bench/conv2d/conv2d_cutlass_launch_fp.cuh>
 #include <CUDA_Bench/conv2d/conv2d_global.cuh>
 #include <CUDA_Bench/util/gpuinfo.cuh>
 #include <CUDA_Bench/util/gpucheck.cuh>
@@ -93,6 +93,7 @@ int conv2d_cutlass()
             {
                 //if(gprofiling){NVBENCH_BENCH(fir_cutlass_launch_ampere_fp32_fp32_fp32_ntc); NVBENCH_MAIN_BODY(gargc_nvbench, gargv_nvbench); }
                 //else{fir_cutlass_launch_ampere_fp32_fp32_fp32_ntc();}
+                conv2d_cutlass_launch_ampere_fp32_fp32_fp32_ntc();
                 break;
             }
             default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
@@ -173,8 +174,9 @@ int conv2d_cutlass()
                 }
                 case GPUARCH_AMPERE: 
                 {
-                    //if(gprofiling){NVBENCH_BENCH(fir_cutlass_launch_ampere_fp16_fp16_fp16_tc); NVBENCH_MAIN_BODY(gargc_nvbench, gargv_nvbench); }
-                    //else{fir_cutlass_launch_ampere_fp16_fp16_fp16_tc();}
+                    //if(gprofiling){NVBENCH_BENCH(conv2d_cutlass_launch_ampere_fp16_fp16_fp16_tc); NVBENCH_MAIN_BODY(gargc_nvbench, gargv_nvbench); }
+                    //else{conv2d_cutlass_launch_ampere_fp16_fp16_fp16_tc();}
+                    conv2d_cutlass_launch_ampere_fp16_fp16_fp16_tc();
                     break;
                 }
                 default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
@@ -201,6 +203,7 @@ int conv2d_cutlass()
                 {
                     //if(gprofiling){NVBENCH_BENCH(fir_cutlass_launch_ampere_fp16_fp16_fp16_ntc); NVBENCH_MAIN_BODY(gargc_nvbench, gargv_nvbench); }
                     //else{fir_cutlass_launch_ampere_fp16_fp16_fp16_ntc();}
+                    conv2d_cutlass_launch_ampere_fp16_fp16_fp16_ntc();
                     break;
                 }
                 default: {std::cout << "[ERR!] GPU Compute Capability is lower than it is required\n"; exit(1); break;}
