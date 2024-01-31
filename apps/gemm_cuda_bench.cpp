@@ -4,7 +4,6 @@
 #include <CUDA_Bench/util/precision_select.cuh>
 #include <CUDA_Bench/gemm/gemm_global.cuh>
 
-// This is global variables needed by NVBench :(
 int gdim_M;               // Global dimension of M
 int gdim_N;               // Global dimension of N
 int gdim_K;               // Global dimension of K
@@ -14,9 +13,6 @@ Precision gaccprecision;  // Global accumulation precision
 bool gprint_result;       // Global print result
 bool gtensor_cores;       // Global tensor cores
 bool guse_cublas;         // Global use cublas
-bool gprofiling;          // Global profiling
-const int  gargc_nvbench = 3;
-const char *gargv_nvbench[] = {"gemm_cuda_bench", "--devices", "0"};
 
 int main(int argc, char *argv[])
 {
@@ -52,11 +48,6 @@ int main(int argc, char *argv[])
             .default_value(false)
             .implicit_value(true)
             .metavar("CUBLAS");
-        program.add_argument("-P", "--profile")
-            .help("Enable built-in kernel profiling with NVBench")
-            .default_value(false)
-            .implicit_value(true)
-            .metavar("PROFILE");
         program.add_argument("-M", "--mulprecision")
             .help("Select matrix multiplication precision: fp64, fp32, fp16, int8, or int4")
             .default_value(std::string("fp16"))
@@ -93,7 +84,6 @@ int main(int argc, char *argv[])
 
     gprint_result = program.get<bool>("--result");
     gtensor_cores = !(program.get<bool>("--cudacoresonly"));
-    gprofiling    = program.get<bool>("--profile");
     guse_cublas   = program.get<bool>("--usecublas");
 
     // Argument Validation
