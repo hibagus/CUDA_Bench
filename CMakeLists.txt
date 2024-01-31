@@ -32,10 +32,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # add project library
 set(PROJECT_GEMM_LIB "gemmbenchlib" )
-set(PROJECT_GEMV_LIB "gemvbenchlib" )
-set(PROJECT_VectorAdd_LIB "vectoraddbenchlib" )
-set(PROJECT_FIR_LIB "firbenchlib" )
-set(PROJECT_CONV2D_LIB "conv2dlib" )
 
 # Add Source Code and Apps
 add_subdirectory(src)
