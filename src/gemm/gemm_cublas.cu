@@ -23,6 +23,17 @@ int gemm_cublas()
     print_cuda_device_info(nDevices);
     if(nDevices>0) {std::cout << "[WARN] This program does not currently support Multi-GPU run.\n";}
 
+    if(gdevice<nDevices)
+    {
+        std::cout << "[INFO] Using GPU index " << gdevice << " to run the benchmark." << std::endl;
+        gpuErrchk(cudaSetDevice(gdevice));
+    }
+    else
+    {
+        std::cout << "[ERR!] Invalid GPU index " << gdevice << "!" << std::endl;
+        exit(1);
+    }
+
     // Call cuBLAS Launcher
     if      (gmulprecision==PRECISION_FP64 && gaccprecision==PRECISION_FP64)
     {

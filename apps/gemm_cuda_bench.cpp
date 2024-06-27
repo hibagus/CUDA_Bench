@@ -11,6 +11,8 @@ int gdim_K;               // Global dimension of K
 double galpha;            // Scaling factor (Alpha) of matrix multiplication
 double gbeta;             // Scaling factor (Beta) of matrix accumulation
 
+int gdevice;               // Device select
+
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
 Precision gaccprecision;  // Global accumulation precision
@@ -71,6 +73,11 @@ int main(int argc, char *argv[])
             .scan<'g', double>()
             .default_value(0.00)
             .metavar("BETA");
+        program.add_argument("-D", "--device")
+            .help("Select device (GPU) where the benchmark is run according to the index number provided by nvidia-smi.")
+            .scan<'i', int>()
+            .default_value(0)
+            .metavar("DEVICE");
         program.add_argument("-I", "--iterations")
             .help("Number of iterations, useful for performance profiling")
             .scan<'i', int>()
@@ -94,6 +101,8 @@ int main(int argc, char *argv[])
 
     galpha = program.get<double>("--alpha");
     gbeta = program.get<double>("--beta");
+
+    gdevice = program.get<int>("--device");
 
     gnum_iter = program.get<int>("--iterations");
 
