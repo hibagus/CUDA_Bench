@@ -166,7 +166,11 @@ int gemm_cublas_launch_fp()
     cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
     cudaEventDestroy(time_start);
     cudaEventDestroy(time_stop);
+    long long total_flops = (long long) 2 * gdim_M * gdim_N * gdim_K;
+    float gflops_per_second = (total_flops / ((elapsedTime/gnum_iter)*0.001)) / 1000000000;
     std::cout << "[INFO] Execution Time: " << elapsedTime << "ms for " << gnum_iter << " iterations (" << elapsedTime/gnum_iter << "ms/iteration)" << std::endl;
+    std::cout << "[INFO] Total FLOPs per iteration: " << total_flops << std::endl;
+    std::cout << "[INFO] Average Throughput: " << gflops_per_second <<" GFLOP/s" << std::endl;
 
 
     if(gprint_result)
