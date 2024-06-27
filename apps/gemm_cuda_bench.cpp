@@ -130,9 +130,9 @@ int main(int argc, char *argv[])
 
     if      (str_mulprecision=="fp64") {gmulprecision=PRECISION_FP64;}
     else if (str_mulprecision=="fp32") {gmulprecision=PRECISION_FP32;}
-//  else if (str_mulprecision=="tf32") {gmulprecision=PRECISION_TF32;}
+    else if (str_mulprecision=="tf32") {gmulprecision=PRECISION_TF32;}
     else if (str_mulprecision=="fp16") {gmulprecision=PRECISION_FP16;}
-//  else if (str_mulprecision=="bf16") {gmulprecision=PRECISION_BF16;}
+    else if (str_mulprecision=="bf16") {gmulprecision=PRECISION_BF16;}
     else if (str_mulprecision=="int8") {gmulprecision=PRECISION_INT8;}
     else if (str_mulprecision=="int4") {gmulprecision=PRECISION_INT4;}
 //  else if (str_mulprecision=="int1") {gmulprecision=PRECISION_INT1;}
@@ -145,9 +145,9 @@ int main(int argc, char *argv[])
 
     if      (str_accprecision=="fp64") {gaccprecision=PRECISION_FP64;}
     else if (str_accprecision=="fp32") {gaccprecision=PRECISION_FP32;}
-//  else if (str_accprecision=="tf32") {gaccprecision=PRECISION_TF32;}
+    else if (str_accprecision=="tf32") {gaccprecision=PRECISION_TF32;}
     else if (str_accprecision=="fp16") {gaccprecision=PRECISION_FP16;}
-//  else if (str_accprecision=="bf16") {gaccprecision=PRECISION_BF16;}
+    else if (str_accprecision=="bf16") {gaccprecision=PRECISION_BF16;}
     else if (str_accprecision=="int8") {gaccprecision=PRECISION_INT8;}
     else if (str_accprecision=="int4") {gaccprecision=PRECISION_INT4;}
 //  else if (str_accprecision=="int1") {gaccprecision=PRECISION_INT1;}

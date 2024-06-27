@@ -43,6 +43,14 @@ int gemm_cublas()
     {
         gemm_cublas_launch_fp_float_float_float();
     }
+    else if (gmulprecision==PRECISION_TF32 && gaccprecision==PRECISION_TF32)
+    {
+        gemm_cublas_launch_fp_float_float_float();
+    }
+    else if (gmulprecision==PRECISION_BF16 && gaccprecision==PRECISION_BF16)
+    {
+        gemm_cublas_launch_fp_float_float_float();
+    }
     else if ((gmulprecision==PRECISION_FP16) && gaccprecision==PRECISION_FP32)
     {
         gemm_cublas_launch_fp_float_half_float();

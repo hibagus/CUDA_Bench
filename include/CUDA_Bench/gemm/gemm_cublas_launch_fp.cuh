@@ -42,6 +42,8 @@ int gemm_cublas_launch_fp()
     {
         case PRECISION_FP64: {mulDataType = CUDA_R_64F; break;}
         case PRECISION_FP32: {mulDataType = CUDA_R_32F; break;}
+        case PRECISION_TF32: {mulDataType = CUDA_R_32F; break;}
+        case PRECISION_BF16: {mulDataType = CUDA_R_32F; break;}
         case PRECISION_FP16: {mulDataType = CUDA_R_16F; break;}
     }
 
@@ -49,6 +51,8 @@ int gemm_cublas_launch_fp()
     {
         case PRECISION_FP64: {accDataType = CUDA_R_64F; break;}
         case PRECISION_FP32: {accDataType = CUDA_R_32F; break;}
+        case PRECISION_TF32: {mulDataType = CUDA_R_32F; break;}
+        case PRECISION_BF16: {mulDataType = CUDA_R_32F; break;}
         case PRECISION_FP16: {accDataType = CUDA_R_16F; break;}
     }
 
@@ -75,12 +79,27 @@ int gemm_cublas_launch_fp()
     {
         if(gtensor_cores) 
         {
-            // verified
-            computeType = CUBLAS_COMPUTE_32F_FAST_16F; 
+            if(gmulprecision==PRECISION_TF32 && gaccprecision==PRECISION_TF32)
+            {
+                // verified
+                computeType = CUBLAS_COMPUTE_32F_FAST_TF32; 
+                std::cout << "[WARN] Using TF32 for FP32 GEMM.\n";
+            }
+            else if (gmulprecision==PRECISION_BF16 && gaccprecision==PRECISION_BF16)
+            {
+                // verified
+                computeType = CUBLAS_COMPUTE_32F_FAST_16BF; 
+                std::cout << "[WARN] Using BF16 for FP32 GEMM.\n";
+            }
+            else
+            {
+                // verified
+                computeType = CUBLAS_COMPUTE_32F_FAST_16F; 
+                std::cout << "[WARN] Using FP16 for FP32 GEMM.\n";
+            }
             algoType    = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
             matA_op     = CUBLAS_OP_N;
             matB_op     = CUBLAS_OP_N;
-            std::cout << "[WARN] Currently Tensor Cores are not supporting FP32 multiplication and accumulation, and thus lossy precision is used\n";
         }
         else             
         {
