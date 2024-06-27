@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
             .implicit_value(true)
             .metavar("CUBLAS");
         program.add_argument("-M", "--mulprecision")
-            .help("Select matrix multiplication precision: fp64, fp32, fp16, int8, or int4")
+            .help("Select matrix multiplication precision: fp64, tf32, fp32, bf16, fp16, int8, or int4")
             .default_value(std::string("fp16"))
             .metavar("MULPREC");
         program.add_argument("-A", "--accprecision")
-            .help("Select matrix accumulation precision: fp64, fp32, fp16, int8, or int4")
+            .help("Select matrix accumulation precision: fp64, tf32, fp32, bf16, fp16, int8, or int4")
             .default_value(std::string("fp16"))
             .metavar("ACCPREC");
         program.add_argument("-P", "--alpha")
