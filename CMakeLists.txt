@@ -11,7 +11,7 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
    message(SEND_ERROR "In-source builds are not allowed.")
 endif()
 
-find_package(CUDA REQUIRED)
+#find_package(CUDA REQUIRED) # Disable FindCUDA since it is deprecated by CMake
 # set to Release to enable optimization
 #        Debug for debugging
 if(${BUILD_MODE} STREQUAL Debug)

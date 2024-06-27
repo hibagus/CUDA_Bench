@@ -104,6 +104,10 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   TODO
   ```
+1. Make sure you have installed NVIDIA CUDA Toolkit in your system and put the executable path into your `PATH` environment variable. Below is the common location for CUDA Toolkit binary, however, you may have it installed on different path. Please adjust the path according to where you install the NVIDIA CUDA Toolkit. 
+  ```sh
+  export PATH=/usr/local/cuda/bin:$PATH
+  ```
 
 ### Installation
 
