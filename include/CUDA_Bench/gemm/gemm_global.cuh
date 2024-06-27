@@ -6,6 +6,8 @@ extern int gdim_M;
 extern int gdim_N;
 extern int gdim_K;
 extern int gnum_iter;
+extern double galpha;
+extern double gbeta;
 extern Precision gmulprecision;
 extern Precision gaccprecision;
 extern bool gprint_result;

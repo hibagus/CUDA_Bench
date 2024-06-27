@@ -19,8 +19,8 @@ static inline int gemm_cublas_launch_int()
     M* dev_matA;
     M* dev_matB;
     A* dev_matC;
-    S alpha = 1;
-    S beta  = 0;
+    S alpha = (S) galpha;
+    S beta  = (S) gbeta;
 
     gpuErrchk(cudaMalloc((void**)&dev_matA, gdim_M * gdim_K * sizeof(M)));
     gpuErrchk(cudaMalloc((void**)&dev_matB, gdim_K * gdim_N * sizeof(M)));
@@ -112,11 +112,22 @@ static inline int gemm_cublas_launch_int()
     cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
     cudaEventDestroy(time_start);
     cudaEventDestroy(time_stop);
+
     long long total_flops = (long long) 2 * gdim_M * gdim_N * gdim_K;
+    if (galpha != 1.0) // non-identity matrix multiplication scaling
+    {
+        std::cout << "[INFO] Non-Identity matrix multiplication scaling factor Alpha: " << galpha << std::endl; 
+        total_flops = (long long) total_flops + gdim_M * gdim_N;
+    }     
+    if (gbeta != 0.0)  // non-zero matrix accumulation scaling
+    {
+        std::cout << "[INFO] Non-Zero matrix accumulation scaling factor Beta: " << gbeta << std::endl; 
+        total_flops = (long long) total_flops + 2 * gdim_M * gdim_N;
+    } 
     float gflops_per_second = (total_flops / ((elapsedTime/gnum_iter)*0.001)) / 1000000000;
     std::cout << "[INFO] Execution Time: " << elapsedTime << "ms for " << gnum_iter << " iterations (" << elapsedTime/gnum_iter << "ms/iteration)" << std::endl;
-    std::cout << "[INFO] Total IOPs per iteration: " << total_flops << std::endl;
-    std::cout << "[INFO] Average Throughput: " << gflops_per_second <<" GIOP/s" << std::endl;
+    std::cout << "[INFO] Total FLOPs per iteration: " << total_flops << std::endl;
+    std::cout << "[INFO] Average Throughput: " << gflops_per_second <<" GFLOP/s" << std::endl;
     
 
     if(gprint_result)

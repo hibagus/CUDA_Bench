@@ -7,6 +7,10 @@
 int gdim_M;               // Global dimension of M
 int gdim_N;               // Global dimension of N
 int gdim_K;               // Global dimension of K
+
+double galpha;            // Scaling factor (Alpha) of matrix multiplication
+double gbeta;             // Scaling factor (Beta) of matrix accumulation
+
 int gnum_iter;            // Global number of iteration
 Precision gmulprecision;  // Global multiplication precision
 Precision gaccprecision;  // Global accumulation precision
@@ -18,12 +22,13 @@ int main(int argc, char *argv[])
 {
     // Program Title
     std::cout << "[INFO] CUDA Bench - General Matrix-Matrix Multiplication (GEMM) \n";
-    std::cout << "[INFO] Version 1.0.0 (C)2022 Bagus Hanindhito \n";
+    std::cout << "[INFO] Version 1.1.0 (C)2024 Bagus Hanindhito \n";
     std::cout << "[INFO] Matrix-Matrix multiplication follows equation: C = (alpha)x(AxB) + (beta)xC\n";
-    std::cout << "[INFO] where alpha=1.00, beta=0.00, and A[MxK], B[KxN], and C[MxN] are matrices \n\n\n";
+    std::cout << "[INFO] where A[MxK], B[KxN], and C[MxN] are matrices.";
+    std::cout << "[INFO] Both Alpha and Beta are configurable and set by default to 1.00 and 0.00, respectively. \n\n\n";
 
     // Arguments Parser
-    argparse::ArgumentParser program(argv[0], "1.0.0", argparse::default_arguments::help);
+    argparse::ArgumentParser program(argv[0], "1.1.0", argparse::default_arguments::help);
         program.add_argument("dim_M")
             .help("Positive integer that describes M dimension of the matrices A(MxK) and C(MxN)")
             .scan<'i', int>();
@@ -56,6 +61,16 @@ int main(int argc, char *argv[])
             .help("Select matrix accumulation precision: fp64, fp32, fp16, int8, or int4")
             .default_value(std::string("fp16"))
             .metavar("ACCPREC");
+        program.add_argument("-P", "--alpha")
+            .help("The value of alpha for scaling factor of matrix multiplication.")
+            .scan<'g', double>()
+            .default_value(1.00)
+            .metavar("ALPHA");
+        program.add_argument("-Q", "--beta")
+            .help("The value of beta for scaling factor of matrix accumulation.")
+            .scan<'g', double>()
+            .default_value(0.00)
+            .metavar("BETA");
         program.add_argument("-I", "--iterations")
             .help("Number of iterations, useful for performance profiling")
             .scan<'i', int>()
@@ -76,6 +91,9 @@ int main(int argc, char *argv[])
     gdim_M = program.get<int>("dim_M");
     gdim_N = program.get<int>("dim_N");
     gdim_K = program.get<int>("dim_K");
+
+    galpha = program.get<double>("--alpha");
+    gbeta = program.get<double>("--beta");
 
     gnum_iter = program.get<int>("--iterations");
 

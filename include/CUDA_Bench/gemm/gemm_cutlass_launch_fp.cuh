@@ -21,8 +21,8 @@ int gemm_cutlass_launch_fp()
     mulPrecision* dev_matA;
     mulPrecision* dev_matB;
     accPrecision* dev_matC;
-    scalePrecision alpha = scalePrecision(1.0);
-    scalePrecision beta  = scalePrecision(0.0);
+    scalePrecision alpha = scalePrecision(galpha);
+    scalePrecision beta  = scalePrecision(gbeta);
 
     gpuErrchk(cudaMalloc((void**)&dev_matA, gdim_M * gdim_K * sizeof(mulPrecision)));
     gpuErrchk(cudaMalloc((void**)&dev_matB, gdim_K * gdim_N * sizeof(mulPrecision)));
@@ -73,7 +73,18 @@ int gemm_cutlass_launch_fp()
     cudaEventElapsedTime(&elapsedTime, time_start, time_stop);
     cudaEventDestroy(time_start);
     cudaEventDestroy(time_stop);
+
     long long total_flops = (long long) 2 * gdim_M * gdim_N * gdim_K;
+    if (galpha != 1.0) // non-identity matrix multiplication scaling
+    {
+        std::cout << "[INFO] Non-Identity matrix multiplication scaling factor Alpha: " << galpha << std::endl; 
+        total_flops = (long long) total_flops + gdim_M * gdim_N;
+    }     
+    if (gbeta != 0.0)  // non-zero matrix accumulation scaling
+    {
+        std::cout << "[INFO] Non-Zero matrix accumulation scaling factor Beta: " << gbeta << std::endl; 
+        total_flops = (long long) total_flops + 2 * gdim_M * gdim_N;
+    } 
     float gflops_per_second = (total_flops / ((elapsedTime/gnum_iter)*0.001)) / 1000000000;
     std::cout << "[INFO] Execution Time: " << elapsedTime << "ms for " << gnum_iter << " iterations (" << elapsedTime/gnum_iter << "ms/iteration)" << std::endl;
     std::cout << "[INFO] Total FLOPs per iteration: " << total_flops << std::endl;
