@@ -43,6 +43,9 @@ int gemm_cutlass()
         case 75: {gpuarch=GPUARCH_TURING; break;}
         case 80: {gpuarch=GPUARCH_AMPERE; break;}
         case 86: {gpuarch=GPUARCH_AMPERE; break;}
+        case 89: {gpuarch=GPUARCH_AMPERE; break;} // Temporary fix for Ada Lovelace
+        case 100: {gpuarch=GPUARCH_AMPERE; break;} // Temporary fix for blackwell
+        case 120: {gpuarch=GPUARCH_AMPERE; break;} // Temporary fix for blackwell
         default: {gpuarch=GPUARCH_OTHER; break;}
     }
     
